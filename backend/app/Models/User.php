@@ -19,8 +19,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'user_type',
     ];
 
     /**
@@ -44,5 +46,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the quizzes created by this user.
+     */
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'created_by');
+    }
+
+    /**
+     * Get the quiz attempts for this user.
+     */
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
     }
 }
