@@ -15,4 +15,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  optimizeDeps: {
+    include: [
+      'tinymce/tinymce',
+      'tinymce/themes/silver',
+      'tinymce/icons/default',
+      'tinymce/models/dom',
+      'jquery',
+      'sortablejs'
+    ]
+  },
+  server: {
+    fs: {
+      strict: false
+    }
+  }
 })

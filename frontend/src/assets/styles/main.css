@@ -1,0 +1,333 @@
+/* Custom Styles for Quiz App */
+
+:root {
+  --primary-color: #78c2ad;
+  --secondary-color: #f3969a;
+  --success-color: #56cc9d;
+  --info-color: #6cc3d5;
+  --warning-color: #ffce67;
+  --danger-color: #ff7851;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  color: #212529;
+  line-height: 1.6;
+}
+
+/* Navbar styling */
+.navbar {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background-color: #343a40 !important;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #ffffff !important;
+}
+
+.navbar-dark .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+}
+
+.navbar-dark .nav-link:hover {
+  color: #ffffff !important;
+}
+
+/* Card enhancements */
+.card {
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-color: #d0d0d0;
+}
+
+.card-header {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Button enhancements */
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #6ab89a;
+  border-color: #6ab89a;
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+/* Form enhancements */
+.form-control,
+.form-select {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
+  color: #212529;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(120, 194, 173, 0.3);
+  background-color: #ffffff;
+}
+
+/* Badge enhancements */
+.badge {
+  padding: 0.4em 0.8em;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+/* Progress bar */
+.progress {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  transition: width 0.3s ease;
+}
+
+/* List group */
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.list-group-item:first-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.list-group-item:last-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Table enhancements */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.table thead {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s;
+  background-color: #ffffff;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.table td,
+.table th {
+  border-color: #e9ecef;
+  padding: 0.75rem;
+}
+
+/* Alert enhancements */
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+/* Quiz Card specific */
+.quiz-card {
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.quiz-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #d0d0d0;
+}
+
+.quiz-card .card-body {
+  background-color: #ffffff;
+}
+
+.quiz-card .card-text {
+  color: #495057;
+}
+
+/* Question Card */
+.question-card {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Timer badge */
+.timer-badge {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Loading spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Footer */
+footer {
+  background-color: var(--dark-color);
+  color: white;
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+  }
+  
+  .btn-group .btn {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Print styles (preparation for print functionality) */
+@media print {
+  .navbar,
+  .btn,
+  .no-print {
+    display: none !important;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6ab89a;
+}
+
+/* SortableJS Styles */
+.sortable-questions {
+  min-height: 50px;
+}
+
+.sortable-item {
+  transition: background-color 0.2s ease;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+  background-color: #f8f9fa;
+}
+
+.sortable-chosen {
+  background-color: #e9ecef;
+}
+
+.sortable-drag {
+  opacity: 0.8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sortable-handle {
+  cursor: move;
+}
+
+.drag-handle {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: move;
+}
+
+.drag-handle:hover {
+  color: #78c2ad !important;
+}
+
+/* Disable text selection during drag */
+.sortable-drag * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

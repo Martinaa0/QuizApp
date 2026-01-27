@@ -25,7 +25,7 @@ class StoreQuizRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'duration' => 'nullable|integer|min:1',
-            'image' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB max
             'category' => 'nullable|string|max:255',
             'difficulty' => 'nullable|in:easy,medium,hard',
             'is_active' => 'nullable|boolean',

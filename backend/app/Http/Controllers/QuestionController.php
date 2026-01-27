@@ -117,4 +117,41 @@ class QuestionController extends Controller
             'message' => 'Question deleted successfully',
         ]);
     }
+
+    /**
+     * Reorder questions for a quiz.
+     */
+    public function reorder(Request $request, string $id): JsonResponse
+    {
+        $quiz = Quiz::findOrFail($id);
+
+        // Provjeri autorizaciju
+        if ($quiz->created_by !== $request->user()->id && $request->user()->user_type !== 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized. You can only reorder questions in your own quizzes.',
+            ], 403);
+        }
+
+        $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:questions,id',
+            'order.*.order' => 'required|integer|min:0',
+        ]);
+
+        foreach ($request->order as $item) {
+            Question::where('id', $item['id'])
+                ->where('quiz_id', $quiz->id)
+                ->update(['order' => $item['order']]);
+        }
+
+        // Refresh quiz with updated order
+        $quiz->load(['creator', 'questions' => function ($query) {
+            $query->orderBy('order');
+        }]);
+
+        return response()->json([
+            'message' => 'Questions reordered successfully',
+            'quiz' => $quiz,
+        ]);
+    }
 }
