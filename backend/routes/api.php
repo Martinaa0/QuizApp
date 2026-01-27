@@ -5,6 +5,8 @@ use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AttemptController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\LobbyController;
+use App\Http\Controllers\MultiplayerGameController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\QuizController;
@@ -62,6 +64,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // File Upload routes (zaštićene)
     Route::post('/upload/image', [FileUploadController::class, 'uploadImage']);
     Route::post('/upload/pdf', [FileUploadController::class, 'uploadPdf']);
+
+    // Multiplayer Lobby routes (zaštićene)
+    Route::get('/lobbies', [LobbyController::class, 'index']);
+    Route::post('/lobbies', [LobbyController::class, 'store']);
+    Route::get('/lobbies/{id}', [LobbyController::class, 'show']);
+    Route::post('/lobbies/join/{code}', [LobbyController::class, 'join']);
+    Route::post('/lobbies/{id}/start', [LobbyController::class, 'start']);
+    Route::post('/lobbies/{id}/leave', [LobbyController::class, 'leave']);
+
+    // Multiplayer Game routes (zaštićene)
+    Route::get('/lobbies/{lobbyId}/game-state', [MultiplayerGameController::class, 'getGameState']);
+    Route::post('/lobbies/{lobbyId}/submit-answer', [MultiplayerGameController::class, 'submitAnswer']);
+    Route::post('/lobbies/{lobbyId}/complete', [MultiplayerGameController::class, 'completeGame']);
 
     // Admin routes (samo za admin korisnike)
     Route::middleware('admin')->prefix('admin')->group(function () {

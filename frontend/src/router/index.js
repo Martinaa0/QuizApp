@@ -60,6 +60,18 @@ const routes = [
     component: UserManagement,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
+  {
+    path: '/lobby',
+    name: 'Lobby',
+    component: () => import('../views/Lobby.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/lobby/:lobbyId/game',
+    name: 'MultiplayerGame',
+    component: () => import('../views/MultiplayerGame.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({

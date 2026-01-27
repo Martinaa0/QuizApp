@@ -79,6 +79,9 @@ const handleLogout = async (event) => {
                   <li class="nav-item">
                     <router-link class="nav-link" to="/quizzes">Quizzes</router-link>
                   </li>
+                  <li class="nav-item" v-if="isAuthenticated">
+                    <router-link class="nav-link" to="/lobby">Multiplayer Lobby</router-link>
+                  </li>
                   <li class="nav-item" v-if="user?.user_type === 'admin'">
                     <router-link class="nav-link" to="/admin/users">User Management</router-link>
                   </li>
