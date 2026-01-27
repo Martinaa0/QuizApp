@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
 // External API proxy routes (public)
 Route::get('/external/premade-quizzes', [ApiController::class, 'premadeQuizzes']);

@@ -14,7 +14,9 @@
           </div>
           <div class="card-body">
             <h1 class="card-title">{{ quiz.title }}</h1>
-            <div class="card-text" v-if="quiz.description" v-html="quiz.description"></div>
+            <div v-if="quiz.description" class="quiz-description">
+              <div class="description-content" v-html="quiz.description"></div>
+            </div>
             <p v-else class="card-text text-muted">No description provided.</p>
             <div class="mb-3">
               <span
@@ -362,5 +364,69 @@ onUnmounted(() => {
 <style scoped>
 .quiz-detail {
   min-height: 60vh;
+}
+
+.quiz-description {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background-color: #f8f9fa;
+  border-left: 4px solid var(--bs-primary);
+  border-radius: 0.375rem;
+}
+
+.description-content {
+  line-height: 1.7;
+  color: #495057;
+  font-size: 1.05rem;
+}
+
+.description-content :deep(p) {
+  margin-bottom: 0.75rem;
+}
+
+.description-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.description-content :deep(ul),
+.description-content :deep(ol) {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.description-content :deep(h1),
+.description-content :deep(h2),
+.description-content :deep(h3),
+.description-content :deep(h4),
+.description-content :deep(h5),
+.description-content :deep(h6) {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.description-content :deep(strong) {
+  font-weight: 600;
+  color: #212529;
+}
+
+.description-content :deep(em) {
+  font-style: italic;
+}
+
+.description-content :deep(code) {
+  background-color: #e9ecef;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.description-content :deep(blockquote) {
+  border-left: 4px solid #dee2e6;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #6c757d;
+  font-style: italic;
 }
 </style>

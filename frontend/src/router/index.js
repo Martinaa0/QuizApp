@@ -6,6 +6,7 @@ import QuizList from '../views/QuizList.vue'
 import QuizDetail from '../views/QuizDetail.vue'
 import QuizTaking from '../views/QuizTaking.vue'
 import UserManagement from '../views/Admin/UserManagement.vue'
+import AdminLogin from '../views/AdminLogin.vue'
 
 const routes = [
   {
@@ -23,6 +24,12 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: Register,
+    meta: { requiresGuest: true },
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: AdminLogin,
     meta: { requiresGuest: true },
   },
   {

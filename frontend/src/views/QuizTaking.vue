@@ -3,9 +3,11 @@
     <div class="container mt-4">
       <!-- Header -->
       <div v-if="quiz" class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>{{ quiz.title }}</h2>
-          <p class="text-muted">{{ quiz.description }}</p>
+        <div class="flex-grow-1">
+          <h2 class="mb-2">{{ quiz.title }}</h2>
+          <p v-if="quiz.description" class="text-muted mb-0" style="line-height: 1.6;">
+            {{ stripHtml(quiz.description) }}
+          </p>
         </div>
         <div class="text-end">
           <div v-if="timer > 0" class="timer-badge">
@@ -324,6 +326,13 @@ const formatTime = (seconds) => {
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const stripHtml = (html) => {
+  if (!html) return ''
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+  return tempDiv.textContent || tempDiv.innerText || ''
 }
 
 const handleAnswerSelected = async (answer) => {

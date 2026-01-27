@@ -36,6 +36,7 @@ class AuthController extends Controller
 
     /**
      * Login user and create token.
+     * Only allows guests and students. Admins must use admin login.
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -59,10 +60,64 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Block admins from using regular login
+        if ($user->user_type === 'admin') {
+            return response()->json([
+                'message' => 'Admin accounts must use the admin login portal.',
+                'errors' => [
+                    'email' => ['This account requires admin authentication.'],
+                ],
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    /**
+     * Admin login - separate endpoint for admin users only.
+     */
+    public function adminLogin(LoginRequest $request): JsonResponse
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'The provided credentials are incorrect.',
+                'errors' => [
+                    'email' => ['No account found with this email address.'],
+                ],
+            ], 401);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'The provided credentials are incorrect.',
+                'errors' => [
+                    'password' => ['Invalid password.'],
+                ],
+            ], 401);
+        }
+
+        // Only allow admins
+        if ($user->user_type !== 'admin') {
+            return response()->json([
+                'message' => 'Access denied. This portal is for administrators only.',
+                'errors' => [
+                    'email' => ['You do not have permission to access this portal.'],
+                ],
+            ], 403);
+        }
+
+        $token = $user->createToken('admin_auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Admin login successful',
             'user' => $user,
             'token' => $token,
         ]);

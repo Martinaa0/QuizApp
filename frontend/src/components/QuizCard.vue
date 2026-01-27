@@ -31,7 +31,7 @@
           </span>
         </div>
         <h5 class="card-title">{{ quiz.title }}</h5>
-        <p class="card-text flex-grow-1">
+        <p class="card-text flex-grow-1 text-muted" style="line-height: 1.6; min-height: 3em;">
           {{ truncateDescription(quiz.description) }}
         </p>
         <div class="mt-auto">
@@ -81,9 +81,16 @@ const quizImageUrl = computed(() => {
 
 const truncateDescription = (description) => {
   if (!description) return 'No description available.'
-  return description.length > 150
-    ? description.substring(0, 150) + '...'
-    : description
+  
+  // Ukloni HTML tagove
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = description
+  const plainText = tempDiv.textContent || tempDiv.innerText || ''
+  
+  // Skrati tekst ako je predugačak
+  return plainText.length > 150
+    ? plainText.substring(0, 150).trim() + '...'
+    : plainText.trim()
 }
 </script>
 

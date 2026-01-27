@@ -34,6 +34,9 @@ const content = ref(props.modelValue)
 const editorConfig = {
   height: props.height,
   menubar: false,
+  branding: false, // Sakrije "Build with tinyMCE" branding
+  statusbar: false, // Sakrije status bar (gdje se prikazuje word count)
+  elementpath: false, // Sakrije element path
   plugins: [
     'advlist',
     'autolink',
@@ -52,7 +55,6 @@ const editorConfig = {
     'table',
     'code',
     'help',
-    'wordcount',
   ],
   toolbar:
     'undo redo | blocks | ' +

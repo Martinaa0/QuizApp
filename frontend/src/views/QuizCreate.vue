@@ -24,11 +24,16 @@
 
             <div class="mb-3">
               <label for="description" class="form-label">Description</label>
-              <RichTextEditor
+              <textarea
+                class="form-control"
+                id="description"
                 v-model="form.description"
-                :height="200"
-                placeholder="Enter quiz description (supports rich text formatting)"
-              />
+                rows="4"
+                placeholder="Enter quiz description..."
+              ></textarea>
+              <div class="form-text">
+                Optional: Add a description for your quiz
+              </div>
             </div>
 
             <!-- Image Upload -->
@@ -230,7 +235,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import QuestionForm from '../components/QuestionForm.vue'
-import RichTextEditor from '../components/RichTextEditor.vue'
 
 const router = useRouter()
 

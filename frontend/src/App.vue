@@ -1,35 +1,58 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import api from './services/api'
 
 const router = useRouter()
+const authToken = ref(localStorage.getItem('auth_token'))
+const userData = ref(localStorage.getItem('user'))
+
+// Listen for auth changes
+window.addEventListener('storage', () => {
+  authToken.value = localStorage.getItem('auth_token')
+  userData.value = localStorage.getItem('user')
+})
+
+window.addEventListener('user-updated', () => {
+  authToken.value = localStorage.getItem('auth_token')
+  userData.value = localStorage.getItem('user')
+})
 
 const isAuthenticated = computed(() => {
-  return !!localStorage.getItem('auth_token')
+  return !!authToken.value
 })
 
 const user = computed(() => {
-  const userStr = localStorage.getItem('user')
-  return userStr ? JSON.parse(userStr) : null
+  return userData.value ? JSON.parse(userData.value) : null
 })
 
-const handleLogout = async () => {
+const handleLogout = async (event) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
   try {
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      await fetch('http://localhost:8000/api/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      })
+    // Pokušaj pozvati backend logout endpoint
+    try {
+      await api.post('/logout')
+    } catch (error) {
+      // Ako backend poziv ne uspije, nastavi s logout-om
+      console.warn('Backend logout failed, continuing with local logout:', error)
     }
   } catch (error) {
     console.error('Logout error:', error)
   } finally {
+    // Uvijek obriši lokalne podatke
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user')
+    
+    // Osvježi reactive varijable
+    authToken.value = null
+    userData.value = null
+    
+    // Emit event za osvježavanje
+    window.dispatchEvent(new Event('user-updated'))
+    
+    // Preusmjeri na home
     router.push({ name: 'Home' })
   }
 }
@@ -70,9 +93,16 @@ const handleLogout = async () => {
               >
                 {{ user?.name || 'User' }}
               </a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                  <a class="dropdown-item" href="#" @click.prevent="handleLogout">Logout</a>
+                  <a 
+                    class="dropdown-item" 
+                    href="#" 
+                    @click.prevent.stop="handleLogout"
+                    style="cursor: pointer;"
+                  >
+                    Logout
+                  </a>
                 </li>
               </ul>
             </li>
