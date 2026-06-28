@@ -1,156 +1,88 @@
 <template>
-  <div class="multiplayer-game">
-    <div class="container mt-4">
-      <!-- Header with Leaderboard -->
-      <div class="row">
-        <div class="col-md-8">
-          <div v-if="quiz" class="mb-4">
-            <h2>{{ quiz.title }}</h2>
-            <p v-if="quiz.description" class="text-muted">
-              {{ stripHtml(quiz.description) }}
-            </p>
-          </div>
+  <div class="game-page">
+    <div class="game-inner">
+      <!-- Loading -->
+      <div v-if="loading" style="text-align:center; padding:80px 0;">
+        <div style="width:40px; height:40px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto;"></div>
+      </div>
 
-          <!-- Progress Bar -->
-          <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="small text-muted">
-                Progress: {{ answeredCount }} / {{ questions.length }} answered
-              </span>
-              <span class="small text-muted">
-                Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}
-              </span>
-            </div>
-            <div class="progress" style="height: 25px;">
-              <div
-                class="progress-bar"
-                :class="{
-                  'bg-success': allQuestionsAnswered,
-                  'bg-primary': !allQuestionsAnswered,
-                }"
-                :style="{ width: progressPercentage + '%' }"
-              >
-                {{ Math.round(progressPercentage) }}%
-              </div>
-            </div>
-          </div>
-
-          <!-- Question -->
-          <div v-if="currentQuestion && !showResults">
-            <QuestionCard
-              :question="currentQuestion"
-              :question-number="currentQuestionIndex + 1"
-              :total-questions="questions.length"
-              :is-submitted="showResults"
-              :answer-feedback="answerFeedback"
-              @answer-selected="handleAnswerSelected"
-            />
-
-            <!-- Navigation -->
-            <div class="d-flex justify-content-between mt-4">
-              <button
-                class="btn btn-secondary"
-                @click="previousQuestion"
-                :disabled="currentQuestionIndex === 0"
-              >
-                ← Previous
-              </button>
-              <div>
-                <button
-                  v-if="currentQuestionIndex < questions.length - 1"
-                  class="btn btn-primary"
-                  @click="nextQuestion"
-                >
-                  Next Question →
-                </button>
-                <button
-                  v-else
-                  class="btn btn-success"
-                  @click="completeGame"
-                  :disabled="answeredCount < questions.length"
-                >
-                  Complete Game
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Results -->
-          <div v-if="showResults" class="card">
-            <div class="card-header bg-success text-white">
-              <h4 class="mb-0">Game Completed!</h4>
-            </div>
-            <div class="card-body">
-              <div class="text-center mb-4">
-                <h3>Your Score: {{ myScore }} / {{ totalPoints }}</h3>
-                <h4>Percentage: {{ myPercentage }}%</h4>
-              </div>
-              <h5>Final Leaderboard:</h5>
-              <div class="list-group">
-                <div
-                  v-for="(player, index) in finalLeaderboard"
-                  :key="player.user_id"
-                  class="list-group-item d-flex justify-content-between align-items-center"
-                  :class="{
-                    'bg-warning': player.user_id === currentUserId,
-                    'bg-light': index === 0 && player.user_id !== currentUserId,
-                  }"
-                >
-                  <div>
-                    <strong>#{{ index + 1 }} {{ player.user_name }}</strong>
-                    <span v-if="player.user_id === currentUserId" class="badge bg-primary ms-2">
-                      You
-                    </span>
-                  </div>
-                  <div>
-                    <span class="badge bg-success">
-                      {{ player.score }} / {{ player.total_points }} ({{ player.percentage }}%)
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div class="mt-4">
-                <router-link to="/lobby" class="btn btn-primary">
-                  Back to Lobby
-                </router-link>
-                <router-link to="/quizzes" class="btn btn-secondary ms-2">
-                  Browse Quizzes
-                </router-link>
-              </div>
-            </div>
+      <div v-else>
+        <!-- Top row -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="live-dot"></span>
+            <span style="font-weight:700; font-size:15px; color:var(--muted2);">
+              Uživo · Pitanje {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+            </span>
           </div>
         </div>
 
-        <!-- Live Leaderboard Sidebar -->
-        <div class="col-md-4">
-          <div class="card sticky-top" style="top: 20px;">
-            <div class="card-header">
-              <h5 class="mb-0">Live Leaderboard</h5>
-            </div>
-            <div class="card-body">
-              <div v-if="leaderboard.length === 0" class="text-muted text-center">
-                No players yet
+        <!-- Progress -->
+        <div class="qa-progress" style="margin-bottom:24px;">
+          <div class="qa-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+        <!-- Question area (left) + Leaderboard (always visible) -->
+        <div class="game-layout">
+          <div class="game-main">
+            <div v-if="currentQuestion && !showResults">
+              <QuestionCard
+                :question="currentQuestion"
+                :question-number="currentQuestionIndex + 1"
+                :total-questions="questions.length"
+                :is-submitted="showResults"
+                :answer-feedback="answerFeedback"
+                @answer-selected="handleAnswerSelected"
+              />
+              <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button class="btn-outline-mint" @click="previousQuestion" :disabled="currentQuestionIndex === 0">← Prethodno</button>
+                <div style="display:flex; gap:10px;">
+                  <button v-if="currentQuestionIndex < questions.length - 1" class="btn-mint" @click="nextQuestion">Dalje →</button>
+                  <button v-else class="btn-mint" @click="completeGame" :disabled="answeredCount < questions.length">Završi igru</button>
+                </div>
               </div>
-              <div v-else class="list-group list-group-flush">
-                <div
-                  v-for="(player, index) in leaderboard"
-                  :key="player.user_id"
-                  class="list-group-item d-flex justify-content-between align-items-center px-0"
-                  :class="{
-                    'bg-warning': player.user_id === currentUserId,
-                    'bg-light': index === 0 && player.user_id !== currentUserId,
-                  }"
-                >
-                  <div>
-                    <strong>#{{ index + 1 }} {{ player.user_name }}</strong>
-                    <span v-if="player.user_id === currentUserId" class="badge bg-primary ms-1">
-                      You
-                    </span>
+            </div>
+
+            <!-- Final results -->
+            <div v-if="showResults" class="results-panel qa-card" style="padding:28px;">
+              <h2 style="font-size:22px; margin-bottom:8px;">Igra završena!</h2>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:var(--accent); margin-bottom:4px;">
+                {{ myScore }} / {{ totalPoints }}
+              </div>
+              <div style="font-size:14px; color:var(--faint); margin-bottom:20px;">{{ myPercentage }}% rezultat</div>
+              <div style="display:flex; gap:10px;">
+                <router-link to="/lobby" class="btn-mint">Natrag u predvorje</router-link>
+                <router-link to="/quizzes" class="btn-outline-mint">Pregledaj kvizove</router-link>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard sidebar -->
+          <div class="leaderboard-panel">
+            <h2 style="font-size:17px; margin-bottom:14px;">Ljestvica uživo</h2>
+            <div class="lb-list">
+              <div
+                v-for="(player, idx) in leaderboard"
+                :key="player.user_id"
+                class="lb-row"
+                :class="{ 'is-you': player.user_id === currentUserId }"
+              >
+                <div class="lb-rank" :style="{ color: rankColor(idx) }">{{ idx + 1 }}</div>
+                <div class="avatar" :style="{ width:'40px', height:'40px', background: avatarColor(player.user_name), fontSize:'13px', color:'#fff' }">
+                  {{ initials(player.user_name) }}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-weight:700; font-size:14px;">{{ player.user_name }}</span>
+                    <span v-if="player.user_id === currentUserId" class="pill pill-sm pill-student" style="font-size:10px; padding:2px 7px;">Vi</span>
                   </div>
-                  <div class="text-end">
-                    <div class="fw-bold">{{ player.score }} pts</div>
-                    <small class="text-muted">{{ player.answers_count }}/{{ questions.length }}</small>
+                  <div class="lb-bar-track">
+                    <div class="lb-bar-fill" :style="{ width: (player.percentage || 0) + '%' }"></div>
                   </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px;">{{ player.score }}</div>
+                  <div style="font-size:11px; color:var(--faint);">{{ player.answers_count || 0 }} / {{ questions.length }}</div>
                 </div>
               </div>
             </div>
@@ -169,7 +101,6 @@ import QuestionCard from '../components/QuestionCard.vue'
 
 const route = useRoute()
 const router = useRouter()
-
 const lobbyId = ref(route.params.lobbyId)
 const quiz = ref(null)
 const questions = ref([])
@@ -185,183 +116,145 @@ const answerFeedback = ref(null)
 const pollInterval = ref(null)
 const currentUserId = ref(null)
 
-const currentQuestion = computed(() => {
-  return questions.value[currentQuestionIndex.value] || null
-})
+const currentQuestion = computed(() => questions.value[currentQuestionIndex.value] || null)
+const answeredCount = computed(() => Object.keys(answers.value).length)
+const progressPercentage = computed(() => questions.value.length ? (answeredCount.value / questions.value.length) * 100 : 0)
+const myScore = computed(() => gameSession.value?.score || 0)
+const totalPoints = computed(() => gameSession.value?.total_points || 0)
+const myPercentage = computed(() => totalPoints.value ? ((myScore.value / totalPoints.value) * 100).toFixed(0) : 0)
 
-const answeredCount = computed(() => {
-  return Object.keys(answers.value).length
-})
-
-const allQuestionsAnswered = computed(() => {
-  return answeredCount.value >= questions.value.length
-})
-
-const progressPercentage = computed(() => {
-  return questions.value.length > 0
-    ? (answeredCount.value / questions.value.length) * 100
-    : 0
-})
-
-const myScore = computed(() => {
-  return gameSession.value?.score || 0
-})
-
-const totalPoints = computed(() => {
-  return gameSession.value?.total_points || 0
-})
-
-const myPercentage = computed(() => {
-  return totalPoints.value > 0
-    ? ((myScore.value / totalPoints.value) * 100).toFixed(2)
-    : 0
-})
-
-const stripHtml = (html) => {
-  if (!html) return ''
-  const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = html
-  return tempDiv.textContent || tempDiv.innerText || ''
+const avatarColors = ['#78c2ad', '#f3969a', '#5b7fd6', '#f5b740', '#56cc9d', '#ff7851']
+const avatarColor = (name) => avatarColors[(name || '').length % avatarColors.length]
+const initials = (name) => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+const rankColor = (i) => {
+  if (i === 0) return '#f5b740'
+  if (i === 1) return '#b8c2c9'
+  if (i === 2) return '#cd8b53'
+  return '#aab8b3'
 }
 
 const fetchGameState = async () => {
   try {
-    const response = await api.get(`/lobbies/${lobbyId.value}/game-state`)
-    const data = response.data
-
-    quiz.value = data.lobby.quiz
-    questions.value = data.lobby.quiz.questions || []
-    gameSession.value = data.game_session
-    leaderboard.value = data.leaderboard || []
-
-    // Učitaj odgovore iz game session
-    if (data.game_session.answers) {
-      answers.value = data.game_session.answers
-    }
-
-    // Postavi current user ID
+    const r = await api.get(`/lobbies/${lobbyId.value}/game-state`)
+    const d = r.data
+    quiz.value = d.lobby.quiz
+    questions.value = d.lobby.quiz.questions || []
+    gameSession.value = d.game_session
+    leaderboard.value = d.leaderboard || []
+    if (d.game_session.answers) answers.value = d.game_session.answers
     const userStr = localStorage.getItem('user')
-    if (userStr) {
-      const user = JSON.parse(userStr)
-      currentUserId.value = user.id
-    }
-
-    // Ako je igra završena, prikaži rezultate
-    if (data.game_session.status === 'completed' || data.lobby.status === 'completed') {
+    if (userStr) currentUserId.value = JSON.parse(userStr).id
+    if (d.game_session.status === 'completed' || d.lobby.status === 'completed') {
       showResults.value = true
-      finalLeaderboard.value = data.leaderboard || []
+      finalLeaderboard.value = d.leaderboard || []
       stopPolling()
     }
-  } catch (error) {
-    console.error('Error fetching game state:', error)
-    if (error.response?.status === 404) {
-      router.push({ name: 'Lobby' })
-    }
-  } finally {
-    loading.value = false
-  }
+  } catch (e) {
+    if (e.response?.status === 404) router.push({ name: 'Lobby' })
+  } finally { loading.value = false }
 }
 
 const handleAnswerSelected = async (answer) => {
-  if (submitting.value || isSubmitted.value) return
-
-  submitting.value = true
-  answerFeedback.value = null
-
+  if (submitting.value) return
+  submitting.value = true; answerFeedback.value = null
   try {
-    const response = await api.post(`/lobbies/${lobbyId.value}/submit-answer`, {
+    const r = await api.post(`/lobbies/${lobbyId.value}/submit-answer`, {
       question_id: answer.question_id,
       option_id: answer.option_id,
       answer_text: answer.answer_text,
     })
-
-    // Ažuriraj lokalne odgovore
     answers.value[answer.question_id] = {
       option_id: answer.option_id,
       answer_text: answer.answer_text,
-      is_correct: response.data.is_correct,
-      points_earned: response.data.points_earned,
+      is_correct: r.data.is_correct,
+      points_earned: r.data.points_earned,
     }
-
-    answerFeedback.value = {
-      is_correct: response.data.is_correct,
-      points_earned: response.data.points_earned,
-    }
-
-    // Ažuriraj game session
-    gameSession.value = response.data.game_session
-
-    // Osvježi leaderboard
+    answerFeedback.value = { is_correct: r.data.is_correct, points_earned: r.data.points_earned }
+    gameSession.value = r.data.game_session
     await fetchGameState()
-  } catch (error) {
-    console.error('Error submitting answer:', error)
-    alert('Failed to submit answer. Please try again.')
-  } finally {
-    submitting.value = false
-  }
+  } catch {} finally { submitting.value = false }
 }
 
-const nextQuestion = () => {
-  if (currentQuestionIndex.value < questions.value.length - 1) {
-    currentQuestionIndex.value++
-    answerFeedback.value = null
-  }
-}
-
-const previousQuestion = () => {
-  if (currentQuestionIndex.value > 0) {
-    currentQuestionIndex.value--
-    answerFeedback.value = null
-  }
-}
+const nextQuestion = () => { if (currentQuestionIndex.value < questions.value.length - 1) { currentQuestionIndex.value++; answerFeedback.value = null } }
+const previousQuestion = () => { if (currentQuestionIndex.value > 0) { currentQuestionIndex.value--; answerFeedback.value = null } }
 
 const completeGame = async () => {
-  if (!confirm('Are you sure you want to complete the game? You cannot change your answers after submitting.')) {
-    return
-  }
-
+  if (!confirm('Završiti igru? Nakon toga ne možete mijenjati odgovore.')) return
   submitting.value = true
-
   try {
-    const response = await api.post(`/lobbies/${lobbyId.value}/complete`)
-    
+    const r = await api.post(`/lobbies/${lobbyId.value}/complete`)
     showResults.value = true
-    finalLeaderboard.value = response.data.leaderboard || []
-    gameSession.value = response.data.game_session
-    
+    finalLeaderboard.value = r.data.leaderboard || []
+    gameSession.value = r.data.game_session
     stopPolling()
-  } catch (error) {
-    console.error('Error completing game:', error)
-    alert('Failed to complete game. Please try again.')
-  } finally {
-    submitting.value = false
-  }
+  } catch {} finally { submitting.value = false }
 }
 
-const startPolling = () => {
-  stopPolling()
-  pollInterval.value = setInterval(fetchGameState, 2000) // Poll every 2 seconds
-}
+const startPolling = () => { stopPolling(); pollInterval.value = setInterval(fetchGameState, 2000) }
+const stopPolling = () => { if (pollInterval.value) { clearInterval(pollInterval.value); pollInterval.value = null } }
 
-const stopPolling = () => {
-  if (pollInterval.value) {
-    clearInterval(pollInterval.value)
-    pollInterval.value = null
-  }
-}
-
-onMounted(async () => {
-  await fetchGameState()
-  startPolling()
-})
-
-onUnmounted(() => {
-  stopPolling()
-})
+onMounted(async () => { await fetchGameState(); startPolling() })
+onUnmounted(stopPolling)
 </script>
 
 <style scoped>
-.multiplayer-game {
-  min-height: 70vh;
+.game-page { min-height: 70vh; }
+.game-inner { max-width: 1060px; margin: 0 auto; padding: 26px 28px 64px; }
+.game-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+.game-main { min-width: 0; }
+
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(255,120,81,.25);
+}
+
+.leaderboard-panel {
+  position: sticky;
+  top: 80px;
+}
+.lb-list { display: flex; flex-direction: column; gap: 11px; }
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: background .15s;
+}
+.lb-row.is-you {
+  background: var(--mint-soft2);
+  border-color: var(--accent);
+}
+.lb-rank {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-bar-track {
+  height: 4px;
+  background: var(--line2);
+  border-radius: 99px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.lb-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width .3s;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 880px) {
+  .game-layout { grid-template-columns: 1fr; }
+  .leaderboard-panel { position: static; }
 }
 </style>

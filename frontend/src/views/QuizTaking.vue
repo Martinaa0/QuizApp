@@ -1,71 +1,31 @@
 <template>
-  <div class="quiz-taking">
-    <div class="container mt-4">
-      <!-- Header -->
-      <div v-if="quiz" class="d-flex justify-content-between align-items-center mb-4">
-        <div class="flex-grow-1">
-          <h2 class="mb-2">{{ quiz.title }}</h2>
-          <p v-if="quiz.description" class="text-muted mb-0" style="line-height: 1.6;">
-            {{ stripHtml(quiz.description) }}
-          </p>
-        </div>
-        <div class="text-end">
-          <div v-if="timer > 0" class="timer-badge">
-            <span
-              class="badge fs-6"
-              :class="{
-                'bg-danger': timer < 60,
-                'bg-warning text-dark': timer >= 60 && timer < 300,
-                'bg-success': timer >= 300,
-              }"
-            >
-              ⏱️ Time: {{ formatTime(timer) }}
-            </span>
-          </div>
-          <div v-else class="timer-badge">
-            <span class="badge bg-danger fs-6">Time's Up!</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Progress Bar -->
-      <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="small text-muted">
-            Progress: {{ answeredCount }} / {{ questions.length }} answered
-          </span>
-          <span class="small text-muted">
-            Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}
-          </span>
-        </div>
-        <div class="progress" style="height: 25px;">
-          <div
-            class="progress-bar"
-            :class="{
-              'bg-success': allQuestionsAnswered,
-              'bg-primary': !allQuestionsAnswered,
-            }"
-            :style="{ width: progressPercentage + '%' }"
-            role="progressbar"
-          >
-            {{ Math.round(progressPercentage) }}%
-          </div>
-        </div>
-        <div v-if="allQuestionsAnswered && !isSubmitted" class="alert alert-success mt-2 mb-0">
-          <strong>All questions answered!</strong> Submitting quiz...
-        </div>
-      </div>
-
+  <div class="take-page">
+    <div class="take-inner">
       <!-- Loading -->
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
+      <div v-if="loading" style="text-align:center; padding:80px 0;">
+        <div style="width:40px; height:40px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto;"></div>
       </div>
 
-      <!-- Question -->
-      <div v-else-if="currentQuestion && !allQuestionsAnswered">
+      <!-- Quiz -->
+      <div v-else-if="quiz && !showResults">
+        <!-- Top row -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div style="font-size:15px; font-weight:700; color:var(--muted2);">
+            Pitanje {{ currentQuestionIndex + 1 }} od {{ questions.length }}
+          </div>
+          <div class="timer-pill" :class="timerClass">
+            ◷ {{ formatTime(timer) }}
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="qa-progress" style="margin-bottom:24px;">
+          <div class="qa-progress-fill" :style="{ width: progressPct + '%' }"></div>
+        </div>
+
+        <!-- Question card -->
         <QuestionCard
+          v-if="currentQuestion"
           :question="currentQuestion"
           :question-number="currentQuestionIndex + 1"
           :total-questions="questions.length"
@@ -74,129 +34,97 @@
           @answer-selected="handleAnswerSelected"
         />
 
-        <!-- Navigation Buttons -->
-        <div class="d-flex justify-content-between mt-4">
+        <!-- Nav buttons -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
           <button
-            class="btn btn-secondary"
+            class="btn-outline-mint"
             @click="previousQuestion"
-            :disabled="currentQuestionIndex === 0 || submitting"
-          >
-            ← Previous
-          </button>
-          <div>
+            :disabled="currentQuestionIndex === 0"
+            style="opacity: currentQuestionIndex === 0 ? 0.5 : 1"
+          >← Prethodno</button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-outline-mint" @click="skipQuestion" v-if="currentQuestionIndex < questions.length - 1">Preskoči</button>
             <button
-              v-if="currentQuestionIndex < questions.length - 1 && !allQuestionsAnswered"
-              class="btn btn-primary"
+              v-if="currentQuestionIndex < questions.length - 1"
+              class="btn-mint"
               @click="nextQuestion"
-            >
-              Next Question →
-            </button>
-            <button
-              v-else-if="!allQuestionsAnswered"
-              class="btn btn-warning"
-              @click="submitQuiz"
-              :disabled="submitting || answeredCount < questions.length"
-              :title="answeredCount < questions.length ? 'Please answer all questions' : ''"
-            >
-              {{ submitting ? 'Submitting...' : 'Submit Quiz (Not all answered)' }}
-            </button>
+            >Dalje →</button>
             <button
               v-else
-              class="btn btn-success"
+              class="btn-mint"
               @click="submitQuiz"
               :disabled="submitting"
-            >
-              {{ submitting ? 'Submitting...' : 'Submit Quiz ✓' }}
-            </button>
+            >{{ submitting ? 'Slanje...' : 'Pošalji ✓' }}</button>
           </div>
+        </div>
+
+        <!-- Question dots -->
+        <div class="question-dots">
+          <button
+            v-for="(q, i) in questions"
+            :key="q.id"
+            class="q-dot"
+            :class="{
+              current: i === currentQuestionIndex,
+              answered: answers[q.id] && i !== currentQuestionIndex,
+            }"
+            @click="goToQuestion(i)"
+          >{{ i + 1 }}</button>
         </div>
       </div>
 
-      <!-- All Questions Answered Message -->
-      <div v-if="allQuestionsAnswered && !showResults && !submitting" class="alert alert-info mt-3">
-        <strong>Great job!</strong> You've answered all questions. The quiz will be submitted automatically, or you can click "Submit Quiz" to finish now.
-      </div>
-
       <!-- Results -->
-      <div v-if="showResults" class="results mt-5 quiz-results">
-        <div class="card">
-          <div class="card-header bg-success text-white">
-            <h4 class="mb-0">Quiz Completed!</h4>
+      <div v-if="showResults" class="results-section fade-in">
+        <!-- Hero panel -->
+        <div class="results-hero">
+          <div class="score-ring-wrap">
+            <div class="score-ring" :style="ringStyle">
+              <div class="score-ring-inner">
+                <div class="score-pct">{{ scorePct }}%</div>
+                <div class="score-label eyebrow">REZULTAT</div>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <div class="results-summary">
-              <div class="row text-center mb-4">
-                <div class="col-md-4">
-                  <div class="score-display">
-                    <h3>{{ results.score || 0 }}</h3>
-                    <p class="text-muted">Points Earned</p>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="score-display">
-                    <h3>{{ results.total_points || 0 }}</h3>
-                    <p class="text-muted">Total Points</p>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="score-display">
-                    <h3>{{ results.percentage ? Math.round(results.percentage) : 0 }}%</h3>
-                    <p class="text-muted">Score</p>
-                  </div>
-                </div>
+          <div class="results-hero-right">
+            <div class="eyebrow" style="color:var(--dark-muted); margin-bottom:10px;">KVIZ ZAVRŠEN</div>
+            <h1 style="font-size:28px; color:var(--dark-text); margin-bottom:10px;">Odlično odrađeno!</h1>
+            <p style="color:var(--dark-muted2); font-size:15px; line-height:1.5; margin-bottom:20px;">
+              Ostvarili ste {{ correctCount }} od {{ questions.length }} na {{ quiz.title }}.
+            </p>
+            <div class="results-stats">
+              <div class="r-stat"><div class="r-stat-num" style="color:#56cc9d;">{{ correctCount }}</div><div class="r-stat-label">Točno</div></div>
+              <div class="r-stat"><div class="r-stat-num" style="color:#ff9a7f;">{{ missedCount }}</div><div class="r-stat-label">Promašeno</div></div>
+              <div class="r-stat"><div class="r-stat-num" style="color:var(--dark-text);">{{ earnedPoints }}</div><div class="r-stat-label">Bodovi</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Answer review -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:28px 0 16px;">
+          <h2 style="font-size:19px;">Pregled odgovora</h2>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-outline-mint" style="font-size:13px; padding:8px 14px;" @click="printResults">⎙ Ispis</button>
+            <router-link to="/quizzes" class="btn-mint" style="font-size:13px; padding:8px 14px;">Više kvizova</router-link>
+          </div>
+        </div>
+        <div class="review-list">
+          <div
+            v-for="(q, i) in questions"
+            :key="q.id"
+            class="review-row"
+            :class="isCorrect(q) ? 'correct' : 'incorrect'"
+          >
+            <div class="review-mark" :class="isCorrect(q) ? 'correct' : 'incorrect'">
+              {{ isCorrect(q) ? '✓' : '✕' }}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:14px;" v-html="q.text"></div>
+              <div style="font-size:13px; color:var(--faint); margin-top:4px;">
+                Vaš odgovor: {{ getUserAnswerText(q) }}
               </div>
             </div>
-
-            <!-- Detailed Results -->
-            <div v-if="detailedResults" class="detailed-results mt-4">
-              <h5 class="mb-3">Question Review</h5>
-              <div
-                v-for="(result, index) in detailedResults"
-                :key="index"
-                class="question-item mb-3"
-              >
-                <div class="question-text">
-                  {{ index + 1 }}. {{ result.question_text }}
-                </div>
-                <div class="question-options mt-2">
-                  <div
-                    v-for="option in result.options"
-                    :key="option.id"
-                    class="option-item"
-                    :class="{
-                      'correct-answer': option.is_correct,
-                      'incorrect-answer': result.user_answer_id === option.id && !option.is_correct,
-                      'user-answer': result.user_answer_id === option.id,
-                    }"
-                  >
-                    {{ option.text }}
-                    <span v-if="option.is_correct" class="badge bg-success ms-2">Correct</span>
-                    <span
-                      v-if="result.user_answer_id === option.id && !option.is_correct"
-                      class="badge bg-danger ms-2"
-                    >
-                      Your Answer
-                    </span>
-                  </div>
-                </div>
-                <div class="mt-2">
-                  <small class="text-muted">
-                    Points: {{ result.points_earned || 0 }} / {{ result.points || 0 }}
-                  </small>
-                </div>
-              </div>
-            </div>
-
-            <div class="text-center mt-4 no-print">
-              <router-link to="/quizzes" class="btn btn-primary me-2">
-                Back to Quizzes
-              </router-link>
-              <button class="btn btn-outline-primary me-2" @click="loadDetailedResults">
-                {{ detailedResults ? 'Hide' : 'Show' }} Detailed Results
-              </button>
-              <button class="btn btn-success" @click="printResults">
-                🖨️ Print Results
-              </button>
+            <div style="font-weight:700; font-size:14px;" :style="{ color: isCorrect(q) ? 'var(--success-deep)' : 'var(--faint)' }">
+              +{{ isCorrect(q) ? q.points : 0 }}
             </div>
           </div>
         </div>
@@ -223,56 +151,79 @@ const loading = ref(true)
 const submitting = ref(false)
 const showResults = ref(false)
 const results = ref(null)
-const detailedResults = ref(null)
 const timer = ref(0)
 const timerInterval = ref(null)
 const isSubmitted = ref(false)
 const answerFeedback = ref(null)
 
-const currentQuestion = computed(() => {
-  return questions.value[currentQuestionIndex.value] || null
+const currentQuestion = computed(() => questions.value[currentQuestionIndex.value] || null)
+const progressPct = computed(() => questions.value.length ? ((currentQuestionIndex.value + 1) / questions.value.length) * 100 : 0)
+const answeredCount = computed(() => Object.keys(answers.value).length)
+const allQuestionsAnswered = computed(() => answeredCount.value >= questions.value.length)
+
+const timerClass = computed(() => {
+  if (timer.value >= 300) return 'timer-green'
+  if (timer.value >= 60) return 'timer-amber'
+  return 'timer-red'
 })
 
-const progressPercentage = computed(() => {
-  return questions.value.length > 0
-    ? ((currentQuestionIndex.value + 1) / questions.value.length) * 100
-    : 0
+// Results computations
+const correctCount = computed(() => {
+  return questions.value.filter(q => isCorrect(q)).length
 })
+const missedCount = computed(() => questions.value.length - correctCount.value)
+const earnedPoints = computed(() => {
+  return questions.value.reduce((sum, q) => sum + (isCorrect(q) ? q.points : 0), 0)
+})
+const totalPoints = computed(() => questions.value.reduce((sum, q) => sum + q.points, 0))
+const scorePct = computed(() => totalPoints.value ? Math.round((earnedPoints.value / totalPoints.value) * 100) : 0)
+const ringStyle = computed(() => ({
+  background: `conic-gradient(var(--accent) 0% ${scorePct.value}%, rgba(255,255,255,.14) ${scorePct.value}% 100%)`
+}))
+
+const isCorrect = (q) => {
+  const a = answers.value[q.id]
+  if (!a) return false
+  if (a.option_id) {
+    const correct = q.options?.find(o => o.is_correct)
+    return correct && a.option_id === correct.id
+  }
+  return false
+}
+
+const getUserAnswerText = (q) => {
+  const a = answers.value[q.id]
+  if (!a) return 'Bez odgovora'
+  if (a.option_id) {
+    const opt = q.options?.find(o => o.id === a.option_id)
+    return opt?.text || 'Bez odgovora'
+  }
+  return a.answer_text || 'Bez odgovora'
+}
+
+const formatTime = (seconds) => {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
 
 const fetchQuiz = async () => {
   try {
-    // Provjeri da li je external quiz
-    const isExternal = route.query.external === 'true' || route.params.id.startsWith('trivia_')
-    
+    const isExternal = route.query.external === 'true' || route.params.id.startsWith?.('trivia_')
     if (isExternal) {
-      // Dohvati external quiz
-      const response = await api.get(`/external/premade-quizzes/${route.params.id}`)
-      if (response.data.success && response.data.quiz) {
-        quiz.value = response.data.quiz
-        questions.value = response.data.quiz.questions || []
-        
-        // Za external quiz, ne kreiraj attempt u bazi, koristi in-memory
-        attempt.value = {
-          id: 'external_' + Date.now(),
-          is_external: true,
-        }
-        
-        // Postavi timer ako postoji duration
-        if (quiz.value.duration) {
-          timer.value = quiz.value.duration * 60
-          startTimer()
-        }
-      } else {
-        throw new Error('Failed to load external quiz')
+      const r = await api.get(`/external/premade-quizzes/${route.params.id}`)
+      if (r.data.success && r.data.quiz) {
+        quiz.value = r.data.quiz
+        questions.value = r.data.quiz.questions || []
+        attempt.value = { id: 'external_' + Date.now(), is_external: true }
+        if (quiz.value.duration) { timer.value = quiz.value.duration * 60; startTimer() }
       }
     } else {
-      // Lokalni quiz
-      const response = await api.get(`/quizzes/${route.params.id}`)
-      quiz.value = response.data
-      questions.value = response.data.questions || []
+      const r = await api.get(`/quizzes/${route.params.id}`)
+      quiz.value = r.data
+      questions.value = r.data.questions || []
     }
-  } catch (error) {
-    console.error('Error fetching quiz:', error)
+  } catch {
     router.push({ name: 'QuizList' })
   } finally {
     loading.value = false
@@ -280,238 +231,192 @@ const fetchQuiz = async () => {
 }
 
 const startQuiz = async () => {
-  // Ako je external quiz, attempt je već kreiran u fetchQuiz
-  if (attempt.value?.is_external) {
-    return
-  }
-
+  if (attempt.value?.is_external) return
   try {
-    const response = await api.post(`/quizzes/${route.params.id}/start`, {
-      quiz_id: route.params.id,
-    })
-    attempt.value = response.data.attempt
-
-    // Postavi timer ako postoji duration
-    if (quiz.value.duration) {
-      timer.value = quiz.value.duration * 60 // pretvori u sekunde
-      startTimer()
-    }
-  } catch (error) {
-    console.error('Error starting quiz:', error)
-    if (error.response?.data?.attempt) {
-      // Korisnik već ima aktivan pokušaj
-      attempt.value = error.response.data.attempt
-      loadExistingAnswers()
-    }
+    const r = await api.post(`/quizzes/${route.params.id}/start`, { quiz_id: route.params.id })
+    attempt.value = r.data.attempt
+    if (quiz.value.duration) { timer.value = quiz.value.duration * 60; startTimer() }
+  } catch (e) {
+    if (e.response?.data?.attempt) { attempt.value = e.response.data.attempt }
   }
 }
 
 const startTimer = () => {
-  if (timerInterval.value) {
-    clearInterval(timerInterval.value)
-  }
-  
+  if (timerInterval.value) clearInterval(timerInterval.value)
   timerInterval.value = setInterval(() => {
-    if (timer.value > 0) {
-      timer.value--
-    } else {
-      // Vrijeme je isteklo, automatski submit
-      clearInterval(timerInterval.value)
-      submitQuiz()
-    }
+    if (timer.value > 0) timer.value--
+    else { clearInterval(timerInterval.value); submitQuiz() }
   }, 1000)
-}
-
-const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
-
-const stripHtml = (html) => {
-  if (!html) return ''
-  const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = html
-  return tempDiv.textContent || tempDiv.innerText || ''
 }
 
 const handleAnswerSelected = async (answer) => {
   answers.value[answer.question_id] = answer
-  // Automatski submit odgovora (AJAX)
-  await submitAnswer(answer)
-  
-  // Provjeri da li su sva pitanja odgovorena
-  if (allQuestionsAnswered.value && !isSubmitted.value) {
-    // Automatski submit kviza kada su sva pitanja odgovorena
-    setTimeout(() => {
-      submitQuiz()
-    }, 1000) // Kratka pauza da korisnik vidi feedback
-  }
-}
-
-const submitAnswer = async (answer) => {
-  if (!attempt.value) return
-
-  // Za external quiz, samo spremi lokalno
-  if (attempt.value.is_external) {
-    // Pronađi točan odgovor
-    const question = questions.value.find(q => q.id === answer.question_id)
-    if (question) {
-      const correctOption = question.options.find(opt => opt.is_correct)
-      const isCorrect = correctOption && answer.option_id === correctOption.id
-      
-      answerFeedback.value = {
-        is_correct: isCorrect,
-        points_earned: isCorrect ? question.points : 0,
-      }
+  if (attempt.value?.is_external) {
+    const q = questions.value.find(q => q.id === answer.question_id)
+    if (q) {
+      const correct = q.options?.find(o => o.is_correct)
+      const ok = correct && answer.option_id === correct.id
+      answerFeedback.value = { is_correct: ok, points_earned: ok ? q.points : 0 }
     }
     return
   }
-
+  if (!attempt.value) return
   try {
-    const response = await api.post('/attempts/answer', {
+    const r = await api.post('/attempts/answer', {
       attempt_id: attempt.value.id,
       question_id: answer.question_id,
       option_id: answer.option_id,
       answer_text: answer.answer_text,
     })
-
-    // Ažuriraj feedback
-    if (currentQuestion.value) {
-      answerFeedback.value = {
-        is_correct: response.data.is_correct,
-        points_earned: response.data.points_earned,
-      }
-    }
-  } catch (error) {
-    console.error('Error submitting answer:', error)
-  }
+    answerFeedback.value = { is_correct: r.data.is_correct, points_earned: r.data.points_earned }
+  } catch {}
 }
 
 const submitQuiz = async () => {
   if (!attempt.value) return
-
   submitting.value = true
-
   try {
-    // Za external quiz, izračunaj rezultate lokalno
     if (attempt.value.is_external) {
-      let totalPoints = 0
-      let earnedPoints = 0
-
-      questions.value.forEach((question) => {
-        totalPoints += question.points
-        const userAnswer = answers.value[question.id]
-        if (userAnswer) {
-          const selectedOption = question.options.find(opt => opt.id === userAnswer.option_id)
-          if (selectedOption && selectedOption.is_correct) {
-            earnedPoints += question.points
-          }
-        }
-      })
-
-      results.value = {
-        score: earnedPoints,
-        total_points: totalPoints,
-        percentage: totalPoints > 0 ? ((earnedPoints / totalPoints) * 100).toFixed(2) : 0,
-        is_external: true,
-      }
-      showResults.value = true
-      isSubmitted.value = true
+      // Score computed locally
     } else {
-      // Za lokalne kvizove, koristi backend
-      const response = await api.post(`/attempts/${attempt.value.id}/submit`)
-      results.value = response.data.attempt
-      showResults.value = true
-      isSubmitted.value = true
+      const r = await api.post(`/attempts/${attempt.value.id}/submit`)
+      results.value = r.data.attempt
     }
-
-    // Zaustavi timer
-    if (timerInterval.value) {
-      clearInterval(timerInterval.value)
-    }
-  } catch (error) {
-    console.error('Error submitting quiz:', error)
-    alert('Error submitting quiz. Please try again.')
+    showResults.value = true
+    isSubmitted.value = true
+    if (timerInterval.value) clearInterval(timerInterval.value)
+  } catch {
+    alert('Greška pri slanju kviza.')
   } finally {
     submitting.value = false
   }
 }
 
 const nextQuestion = () => {
-  if (currentQuestionIndex.value < questions.value.length - 1) {
-    currentQuestionIndex.value++
-    answerFeedback.value = null
-  }
+  if (currentQuestionIndex.value < questions.length - 1) { currentQuestionIndex.value++; answerFeedback.value = null }
 }
-
 const previousQuestion = () => {
-  if (currentQuestionIndex.value > 0) {
-    currentQuestionIndex.value--
-    answerFeedback.value = null
-  }
+  if (currentQuestionIndex.value > 0) { currentQuestionIndex.value--; answerFeedback.value = null }
 }
+const skipQuestion = () => nextQuestion()
+const goToQuestion = (i) => { currentQuestionIndex.value = i; answerFeedback.value = null }
+const printResults = () => window.print()
 
-const loadExistingAnswers = () => {
-  if (attempt.value?.userAnswers) {
-    attempt.value.userAnswers.forEach((answer) => {
-      answers.value[answer.question_id] = {
-        question_id: answer.question_id,
-        option_id: answer.option_id,
-        answer_text: answer.answer_text,
-      }
-    })
-  }
-}
-
-const loadDetailedResults = async () => {
-  if (detailedResults.value) {
-    detailedResults.value = null
-    return
-  }
-
-  try {
-    const response = await api.get(`/attempts/${attempt.value.id}/results`)
-    detailedResults.value = response.data.questions || response.data.attempt?.quiz?.questions || []
-  } catch (error) {
-    console.error('Error loading detailed results:', error)
-    alert('Failed to load detailed results.')
-  }
-}
-
-const printResults = () => {
-  window.print()
-}
-
-const viewResults = () => {
-  router.push({
-    name: 'QuizResults',
-    params: { attemptId: attempt.value.id },
-  })
-}
-
-onMounted(async () => {
-  await fetchQuiz()
-  await startQuiz()
-})
-
-onUnmounted(() => {
-  if (timerInterval.value) {
-    clearInterval(timerInterval.value)
-  }
-})
+onMounted(async () => { await fetchQuiz(); await startQuiz() })
+onUnmounted(() => { if (timerInterval.value) clearInterval(timerInterval.value) })
 </script>
 
 <style scoped>
-.quiz-taking {
-  min-height: 70vh;
+.take-page { min-height: 70vh; }
+.take-inner { max-width: 760px; margin: 0 auto; padding: 26px 24px 64px; }
+
+.timer-pill {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+.timer-green { background: #e7f5ee; color: #3aa17e; }
+.timer-amber { background: #fbf2dd; color: var(--warning-text); }
+.timer-red { background: #ffe9e2; color: var(--danger); }
+
+.question-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  justify-content: center;
+}
+.q-dot {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--line3);
+  color: var(--faint2);
+}
+.q-dot.current { background: var(--accent); color: #fff; }
+.q-dot.answered { background: #d6efe5; color: var(--success-deep); }
+
+/* Results */
+.results-hero {
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  border-radius: 20px;
+  padding: 34px;
+  display: flex;
+  gap: 34px;
+  align-items: center;
+  color: var(--dark-text);
+}
+.score-ring-wrap { flex-shrink: 0; }
+.score-ring {
+  width: 128px; height: 128px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.score-ring-inner {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: var(--dark-inner);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.score-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--dark-text);
+}
+.score-label { color: var(--dark-muted); margin-top: 2px; }
+.results-hero-right { flex: 1; }
+.results-stats { display: flex; gap: 24px; }
+.r-stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+}
+.r-stat-label {
+  font-size: 12px;
+  color: var(--dark-muted);
+  font-weight: 700;
+  margin-top: 2px;
 }
 
-.timer-badge {
-  font-size: 1.2rem;
+.review-list { display: flex; flex-direction: column; gap: 8px; }
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-radius: 12px;
+  border-left: 4px solid;
 }
+.review-row.correct { border-left-color: var(--success); }
+.review-row.incorrect { border-left-color: var(--danger); }
+.review-mark {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.review-mark.correct { background: #e7f5ee; color: var(--success-deep); }
+.review-mark.incorrect { background: #ffe9e2; color: var(--danger-text); }
 
-.progress-bar {
-  transition: width 0.3s ease;
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .results-hero { flex-direction: column; text-align: center; }
+  .results-stats { justify-content: center; }
 }
 </style>

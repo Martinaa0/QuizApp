@@ -2,26 +2,26 @@
   <form @submit.prevent="handleSubmit">
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label for="name" class="form-label">Name *</label>
+        <label for="name" class="form-label">Ime *</label>
         <input
           type="text"
           class="form-control"
           id="name"
           v-model="form.name"
           required
-          placeholder="Enter full name"
+          placeholder="Unesite puno ime"
         />
       </div>
 
       <div class="col-md-6 mb-3">
-        <label for="username" class="form-label">Username *</label>
+        <label for="username" class="form-label">Korisničko ime *</label>
         <input
           type="text"
           class="form-control"
           id="username"
           v-model="form.username"
           required
-          placeholder="Enter username"
+          placeholder="Unesite korisničko ime"
         />
       </div>
     </div>
@@ -35,15 +35,15 @@
           id="email"
           v-model="form.email"
           required
-          placeholder="Enter email address"
+          placeholder="Unesite email adresu"
         />
       </div>
 
       <div class="col-md-6 mb-3">
-        <label for="user_type" class="form-label">User Type *</label>
+        <label for="user_type" class="form-label">Uloga korisnika *</label>
         <select class="form-select" id="user_type" v-model="form.user_type" required>
           <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
+          <option value="teacher">Profesor</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -51,7 +51,7 @@
 
     <div class="mb-3">
       <label for="password" class="form-label">
-        {{ editing ? 'New Password (leave empty to keep current)' : 'Password *' }}
+        {{ editing ? 'Nova lozinka (ostavite prazno za zadržavanje trenutne)' : 'Lozinka *' }}
       </label>
       <input
         type="password"
@@ -59,10 +59,10 @@
         id="password"
         v-model="form.password"
         :required="!editing"
-        :placeholder="editing ? 'Enter new password (optional)' : 'Enter password (min 8 characters)'"
+        :placeholder="editing ? 'Unesite novu lozinku (neobavezno)' : 'Unesite lozinku (min. 8 znakova)'"
       />
       <div class="form-text">
-        {{ editing ? 'Leave empty if you don\'t want to change the password.' : 'Minimum 8 characters required.' }}
+        {{ editing ? 'Ostavite prazno ako ne želite promijeniti lozinku.' : 'Potrebno je najmanje 8 znakova.' }}
       </div>
     </div>
 
@@ -72,10 +72,10 @@
 
     <div class="d-flex justify-content-end">
       <button type="button" class="btn btn-secondary me-2" @click="cancel">
-        Cancel
+        Odustani
       </button>
       <button type="submit" class="btn btn-primary" :disabled="loading">
-        {{ loading ? 'Saving...' : (editing ? 'Update User' : 'Create User') }}
+        {{ loading ? 'Spremanje...' : (editing ? 'Ažuriraj korisnika' : 'Kreiraj korisnika') }}
       </button>
     </div>
   </form>
@@ -163,7 +163,7 @@ const handleSubmit = async () => {
       const errors = Object.values(err.response.data.errors).flat()
       error.value = errors.join(', ')
     } else {
-      error.value = err.response?.data?.message || 'Failed to save user. Please try again.'
+      error.value = err.response?.data?.message || 'Spremanje korisnika nije uspjelo. Pokušajte ponovo.'
     }
   } finally {
     loading.value = false

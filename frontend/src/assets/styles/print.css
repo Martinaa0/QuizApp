@@ -1,23 +1,8 @@
-/* Print Styles for Quiz App */
-
 @media print {
-  /* Hide non-essential elements */
-  .navbar,
-  .btn,
-  .no-print,
-  .timer-badge,
-  .progress,
-  footer,
-  .card-header .btn,
-  .list-group-item .btn-group {
-    display: none !important;
-  }
+  .app-bar, .no-print, footer, .btn-mint, .btn-outline-mint, .btn-ghost, .btn-danger-text,
+  .question-dots, .filter-bar, .mobile-toggle { display: none !important; }
 
-  /* Page setup */
-  @page {
-    margin: 1.5cm;
-    size: A4;
-  }
+  @page { margin: 1.5cm; size: A4; }
 
   body {
     background: white;
@@ -26,225 +11,38 @@
     line-height: 1.5;
   }
 
-  /* Typography */
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2, h3, h4 {
     color: black;
     page-break-after: avoid;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
   }
 
-  h1 {
-    font-size: 24pt;
-    border-bottom: 2px solid #000;
-    padding-bottom: 0.3em;
-  }
-
-  h2 {
-    font-size: 18pt;
-  }
-
-  h3 {
-    font-size: 14pt;
-  }
-
-  /* Cards and containers */
-  .card {
-    border: 1px solid #000;
+  .qa-card {
+    border: 1px solid #ccc;
     box-shadow: none;
     page-break-inside: avoid;
-    margin-bottom: 1em;
-    background: white;
   }
 
-  .card-header {
-    background: #f0f0f0 !important;
-    color: black !important;
-    border-bottom: 2px solid #000;
-    padding: 0.5em;
-    font-weight: bold;
-  }
-
-  .card-body {
-    padding: 1em;
-    background: white;
-  }
-
-  /* Quiz results */
-  .quiz-results {
-    page-break-inside: avoid;
-  }
-
-  .results-summary {
-    border: 2px solid #000;
-    padding: 1em;
-    margin-bottom: 1em;
-    background: #f9f9f9;
-  }
-
-  .results-summary h3 {
-    margin-top: 0;
-  }
-
-  /* Questions and answers */
-  .question-item {
-    page-break-inside: avoid;
-    margin-bottom: 1.5em;
-    padding: 1em;
-    border: 1px solid #ccc;
-  }
-
-  .question-text {
-    font-weight: bold;
-    margin-bottom: 0.5em;
-    color: black;
-  }
-
-  .question-options {
-    margin-left: 1.5em;
-    margin-top: 0.5em;
-  }
-
-  .option-item {
-    margin-bottom: 0.3em;
-  }
-
-  .correct-answer {
-    background: #d4edda;
-    padding: 0.2em 0.5em;
-    border-left: 3px solid #28a745;
-  }
-
-  .incorrect-answer {
-    background: #f8d7da;
-    padding: 0.2em 0.5em;
-    border-left: 3px solid #dc3545;
-  }
-
-  .user-answer {
-    font-weight: bold;
-  }
-
-  /* Tables */
-  .table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 1em;
-  }
-
-  .table th,
-  .table td {
-    border: 1px solid #000;
-    padding: 0.5em;
-    text-align: left;
-  }
-
-  .table thead {
+  .results-hero {
     background: #f0f0f0 !important;
     color: black !important;
   }
+  .results-hero * { color: black !important; }
 
-  .table tbody tr {
-    background: white;
-  }
-
-  /* Badges */
-  .badge {
-    border: 1px solid #000;
-    padding: 0.2em 0.5em;
-    background: white;
-    color: black;
-  }
-
-  /* Lists */
-  .list-group-item {
-    border: 1px solid #ccc;
-    padding: 0.5em;
-    margin-bottom: 0.3em;
-    background: white;
+  .review-row {
     page-break-inside: avoid;
+    border: 1px solid #ddd;
   }
+  .review-row.correct { border-left-color: #28a745; }
+  .review-row.incorrect { border-left-color: #dc3545; }
 
-  /* Alerts */
-  .alert {
-    border: 1px solid #000;
-    padding: 0.75em;
-    margin-bottom: 1em;
-    background: white;
-    color: black;
-  }
+  .correct-answer { background: #d4edda; }
+  .incorrect-answer { background: #f8d7da; }
 
-  .alert-success {
-    border-left: 4px solid #28a745;
-  }
+  a { color: black; text-decoration: underline; }
+  a[href^="http"]:after { content: " (" attr(href) ")"; font-size: 0.9em; color: #666; }
 
-  .alert-danger {
-    border-left: 4px solid #dc3545;
-  }
+  .page-break { page-break-before: always; }
+  .no-page-break { page-break-inside: avoid; }
 
-  .alert-info {
-    border-left: 4px solid #17a2b8;
-  }
-
-  .alert-warning {
-    border-left: 4px solid #ffc107;
-  }
-
-  /* Images */
-  img {
-    max-width: 100%;
-    height: auto;
-    page-break-inside: avoid;
-  }
-
-  /* Links */
-  a {
-    color: black;
-    text-decoration: underline;
-  }
-
-  a[href^="http"]:after {
-    content: " (" attr(href) ")";
-    font-size: 0.9em;
-    color: #666;
-  }
-
-  /* Page breaks */
-  .page-break {
-    page-break-before: always;
-  }
-
-  .no-page-break {
-    page-break-inside: avoid;
-  }
-
-  /* Footer for print */
-  .print-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 10pt;
-    color: #666;
-    border-top: 1px solid #ccc;
-    padding: 0.5em;
-  }
-
-  /* Score display */
-  .score-display {
-    font-size: 18pt;
-    font-weight: bold;
-    text-align: center;
-    padding: 1em;
-    border: 2px solid #000;
-    margin: 1em 0;
-  }
-
-  /* Progress indicators */
-  .progress-text {
-    font-weight: bold;
-    text-align: center;
-    margin: 0.5em 0;
-  }
+  img { max-width: 100%; height: auto; page-break-inside: avoid; }
 }

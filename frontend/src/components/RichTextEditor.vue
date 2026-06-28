@@ -23,7 +23,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Enter text...',
+    default: 'Unesite tekst...',
   },
 })
 
