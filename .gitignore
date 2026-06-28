@@ -5,6 +5,7 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 *~
@@ -37,3 +38,7 @@ build/
 # Temporary files
 *.tmp
 *.temp
+
+# Design prototype files
+QuizApp.dc.html
+support.js
