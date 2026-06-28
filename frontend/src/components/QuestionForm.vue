@@ -2,29 +2,29 @@
   <div class="question-form">
     <div class="card mb-4">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{{ editingQuestion ? 'Edit Question' : 'Add New Question' }}</h5>
+        <h5 class="mb-0">{{ editingQuestion ? 'Uredi pitanje' : 'Dodaj novo pitanje' }}</h5>
         <button
           v-if="editingQuestion"
           class="btn btn-sm btn-secondary"
           @click="cancelEdit"
         >
-          Cancel
+          Odustani
         </button>
       </div>
       <div class="card-body">
         <form @submit.prevent="handleSubmit">
           <div class="mb-3">
-            <label for="question-text" class="form-label">Question Text *</label>
+            <label for="question-text" class="form-label">Tekst pitanja *</label>
             <RichTextEditor
               v-model="form.text"
               :height="200"
-              placeholder="Enter your question..."
+              placeholder="Unesite svoje pitanje..."
             />
           </div>
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label for="question-type" class="form-label">Question Type *</label>
+              <label for="question-type" class="form-label">Vrsta pitanja *</label>
               <select
                 class="form-select"
                 id="question-type"
@@ -32,13 +32,13 @@
                 @change="onTypeChange"
                 required
               >
-                <option value="multiple_choice">Multiple Choice</option>
-                <option value="true_false">True/False</option>
-                <option value="short_answer">Short Answer</option>
+                <option value="multiple_choice">Višestruki izbor</option>
+                <option value="true_false">Točno/Netočno</option>
+                <option value="short_answer">Kratki odgovor</option>
               </select>
             </div>
             <div class="col-md-3">
-              <label for="question-points" class="form-label">Points *</label>
+              <label for="question-points" class="form-label">Bodovi *</label>
               <input
                 type="number"
                 class="form-control"
@@ -50,21 +50,21 @@
               />
             </div>
             <div class="col-md-3">
-              <label for="question-order" class="form-label">Order</label>
+              <label for="question-order" class="form-label">Redoslijed</label>
               <input
                 type="number"
                 class="form-control"
                 id="question-order"
                 v-model.number="form.order"
                 min="0"
-                placeholder="Optional"
+                placeholder="Neobavezno"
               />
             </div>
           </div>
 
           <!-- Options for Multiple Choice and True/False -->
           <div v-if="form.type === 'multiple_choice' || form.type === 'true_false'" class="mb-3">
-            <label class="form-label">Options *</label>
+            <label class="form-label">Opcije *</label>
             <div
               v-for="(option, index) in form.options"
               :key="index"
@@ -83,7 +83,7 @@
                 type="text"
                 class="form-control"
                 v-model="option.text"
-                :placeholder="form.type === 'true_false' ? (index === 0 ? 'True' : 'False') : `Option ${index + 1}`"
+                :placeholder="form.type === 'true_false' ? (index === 0 ? 'Točno' : 'Netočno') : `Opcija ${index + 1}`"
                 required
               />
               <button
@@ -92,7 +92,7 @@
                 type="button"
                 @click="removeOption(index)"
               >
-                Remove
+                Ukloni
               </button>
             </div>
             <button
@@ -101,26 +101,26 @@
               type="button"
               @click="addOption"
             >
-              + Add Option
+              + Dodaj opciju
             </button>
             <div v-if="form.type === 'true_false'" class="form-text">
-              True/False questions automatically have 2 options.
+              Točno/Netočno pitanja automatski imaju 2 opcije.
             </div>
           </div>
 
           <!-- Correct Answer for Short Answer -->
           <div v-if="form.type === 'short_answer'" class="mb-3">
-            <label for="correct-answer" class="form-label">Correct Answer *</label>
+            <label for="correct-answer" class="form-label">Točan odgovor *</label>
             <input
               type="text"
               class="form-control"
               id="correct-answer"
               v-model="form.correct_answer"
               required
-              placeholder="Enter the correct answer..."
+              placeholder="Unesite točan odgovor..."
             />
             <div class="form-text">
-              This will be used to check if the user's answer is correct.
+              Ovo će se koristiti za provjeru je li odgovor korisnika točan.
             </div>
           </div>
 
@@ -134,10 +134,10 @@
               class="btn btn-secondary me-2"
               @click="resetForm"
             >
-              Reset
+              Poništi
             </button>
             <button type="submit" class="btn btn-primary" :disabled="loading">
-              {{ loading ? 'Saving...' : (editingQuestion ? 'Update Question' : 'Add Question') }}
+              {{ loading ? 'Spremanje...' : (editingQuestion ? 'Ažuriraj pitanje' : 'Dodaj pitanje') }}
             </button>
           </div>
         </form>
@@ -185,8 +185,8 @@ const onTypeChange = () => {
 
   if (form.value.type === 'true_false') {
     form.value.options = [
-      { text: 'True', is_correct: false },
-      { text: 'False', is_correct: false },
+      { text: 'Točno', is_correct: false },
+      { text: 'Netočno', is_correct: false },
     ]
   } else if (form.value.type === 'multiple_choice') {
     if (form.value.options.length < 2) {
@@ -308,7 +308,7 @@ const handleSubmit = async () => {
       const errors = Object.values(err.response.data.errors).flat()
       error.value = errors.join(', ')
     } else {
-      error.value = err.response?.data?.message || 'Failed to save question. Please try again.'
+      error.value = err.response?.data?.message || 'Spremanje pitanja nije uspjelo. Pokušajte ponovo.'
     }
   } finally {
     loading.value = false
@@ -338,8 +338,8 @@ watch(
 
       if (form.value.type === 'true_false' && form.value.options.length !== 2) {
         form.value.options = [
-          { text: 'True', is_correct: false },
-          { text: 'False', is_correct: false },
+          { text: 'Točno', is_correct: false },
+          { text: 'Netočno', is_correct: false },
         ]
       }
     } else {

@@ -1,230 +1,145 @@
 <template>
-  <div class="quiz-create">
-    <div class="container mt-5">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Create New Quiz</h1>
-        <router-link to="/" class="btn btn-outline-primary">
-          ← Back to Home
-        </router-link>
-      </div>
-      <div class="card">
-        <div class="card-body">
-          <form @submit.prevent="handleSubmit">
-            <div class="mb-3">
-              <label for="title" class="form-label">Title *</label>
-              <input
-                type="text"
-                class="form-control"
-                id="title"
-                v-model="form.title"
-                required
-                placeholder="Enter quiz title"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea
-                class="form-control"
-                id="description"
-                v-model="form.description"
-                rows="4"
-                placeholder="Enter quiz description..."
-              ></textarea>
-              <div class="form-text">
-                Optional: Add a description for your quiz
-              </div>
-            </div>
-
-            <!-- Image Upload -->
-            <div class="mb-3">
-              <label for="image" class="form-label">Quiz Image</label>
-              <input
-                type="file"
-                class="form-control"
-                id="image"
-                accept="image/*"
-                @change="handleImageChange"
-              />
-              <div class="form-text">
-                Accepted formats: JPEG, PNG, JPG, GIF, WEBP (Max 2MB)
-              </div>
-              <div v-if="imagePreview" class="mt-2">
-                <img
-                  :src="imagePreview"
-                  alt="Preview"
-                  class="img-thumbnail"
-                  style="max-width: 200px; max-height: 200px;"
-                />
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger ms-2"
-                  @click="clearImage"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label for="category" class="form-label">Category</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="category"
-                  v-model="form.category"
-                  placeholder="e.g., Science, History"
-                />
-              </div>
-
-              <div class="col-md-4 mb-3">
-                <label for="difficulty" class="form-label">Difficulty</label>
-                <select class="form-select" id="difficulty" v-model="form.difficulty">
-                  <option value="">Select difficulty</option>
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-
-              <div class="col-md-4 mb-3">
-                <label for="duration" class="form-label">Duration (minutes)</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="duration"
-                  v-model.number="form.duration"
-                  min="1"
-                  placeholder="Optional"
-                />
-              </div>
-            </div>
-
-            <div class="mb-3 form-check">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                id="is_active"
-                v-model="form.is_active"
-              />
-              <label class="form-check-label" for="is_active">
-                Active (visible to users)
-              </label>
-            </div>
-
-            <div v-if="error" class="alert alert-danger">
-              {{ error }}
-            </div>
-
-            <div class="d-flex justify-content-between">
-              <router-link to="/quizzes" class="btn btn-secondary">
-                Cancel
-              </router-link>
-              <button type="submit" class="btn btn-primary" :disabled="loading">
-                {{ loading ? 'Creating...' : 'Create Quiz' }}
-              </button>
-            </div>
-          </form>
+  <div class="create-page">
+    <div class="create-inner">
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:14px;">
+        <div>
+          <h1 style="font-size:28px; margin-bottom:4px;">Kreiraj kviz</h1>
+          <span v-if="createdQuizId" style="font-size:13px; color:var(--faint); font-weight:700;">Skica · spremljeno</span>
         </div>
-      </div>
-
-      <!-- Questions Section -->
-      <div v-if="createdQuizId" class="card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            Add Questions ({{ questions.length }}/20)
-            <span v-if="questions.length >= 20" class="badge bg-warning ms-2">
-              Maximum reached
-            </span>
-          </h5>
+        <div style="display:flex; gap:10px;">
+          <router-link to="/quizzes" class="btn-outline-mint" style="font-size:13.5px; padding:10px 16px;">Odustani</router-link>
           <button
-            v-if="questions.length < 20"
-            class="btn btn-sm btn-success"
-            @click="showQuestionForm = !showQuestionForm"
-          >
-            {{ showQuestionForm ? 'Cancel' : '+ Add Question' }}
-          </button>
-          <span v-else class="text-muted small">
-            Maximum of 20 questions reached
-          </span>
+            v-if="!createdQuizId"
+            class="btn-mint"
+            style="font-size:13.5px; padding:10px 18px;"
+            @click="handleSubmit"
+            :disabled="loading"
+          >{{ loading ? 'Kreiranje...' : 'Objavi' }}</button>
+          <button
+            v-if="createdQuizId"
+            class="btn-mint"
+            style="font-size:13.5px; padding:10px 18px;"
+            @click="finishCreating"
+            :disabled="questions.length === 0"
+          >Završi</button>
         </div>
-        <div class="card-body">
-          <!-- Question Form -->
-          <div v-if="showQuestionForm && questions.length < 20" class="mb-4">
-            <QuestionForm
-              :quiz-id="createdQuizId"
-              :question="editingQuestion"
-              @saved="handleQuestionSaved"
-              @cancelled="cancelQuestionEdit"
+      </div>
+
+      <div class="create-grid two-col-layout">
+        <!-- Left column -->
+        <div class="create-left">
+          <!-- Title + Description -->
+          <div class="qa-card" style="padding:24px; margin-bottom:20px;">
+            <input
+              type="text"
+              class="title-input"
+              v-model="form.title"
+              placeholder="Kviz bez naslova"
+              required
             />
+            <div style="margin-top:16px;">
+              <RichTextEditor
+                v-model="form.description"
+                :height="180"
+                placeholder="Dodajte opis…"
+              />
+            </div>
           </div>
 
-          <!-- Questions List -->
-          <div v-if="questions.length > 0" class="mb-3">
-            <h6>Added Questions:</h6>
-            <div class="list-group">
+          <!-- Questions -->
+          <div v-if="createdQuizId" class="qa-card" style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h2 style="font-size:19px;">Pitanja · {{ questions.length }}</h2>
+              <span style="font-size:12px; color:var(--faint); font-weight:700;">⤢ Povucite za promjenu redoslijeda</span>
+            </div>
+
+            <div class="questions-list">
               <div
-                v-for="(question, index) in questions"
-                :key="question.id || index"
-                class="list-group-item d-flex justify-content-between align-items-start"
+                v-for="(q, i) in questions"
+                :key="q.id || i"
+                class="question-row"
               >
-                <div class="ms-2 me-auto">
-                  <div class="fw-bold">
-                    {{ index + 1 }}. {{ question.text }}
+                <span style="color:var(--faint2); cursor:move; font-size:16px;">⠿</span>
+                <div class="q-num-tile">{{ i + 1 }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-weight:700; font-size:14px;" v-html="q.text || 'Bez naslova'"></div>
+                  <div style="font-size:12px; color:var(--faint); margin-top:2px;">
+                    {{ q.options?.length || 0 }} opcija · {{ q.points }} bod.
                   </div>
-                  <small class="text-muted">
-                    Type: {{ question.type }} | Points: {{ question.points }}
-                    <span v-if="question.options && question.options.length > 0">
-                      | {{ question.options.length }} option(s)
-                    </span>
-                  </small>
                 </div>
-                <div class="btn-group">
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    @click="editQuestion(question)"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="removeQuestion(index)"
-                  >
-                    Remove
-                  </button>
-                </div>
+                <span class="pill pill-sm" :class="typePillClass(q.type)">{{ formatType(q.type) }}</span>
+                <button class="btn-ghost" style="font-size:12px; padding:4px 8px;" @click="editQuestion(q)">Uredi</button>
+                <button class="btn-danger-text" style="font-size:12px; padding:4px 8px;" @click="removeQuestion(i)">Ukloni</button>
               </div>
             </div>
-          </div>
 
-          <div v-else class="alert alert-info">
-            No questions added yet. Add at least one question to make your quiz functional.
-          </div>
+            <button
+              class="add-question-btn"
+              @click="showQuestionForm = true"
+              v-if="!showQuestionForm && questions.length < 20"
+            >+ Dodaj pitanje</button>
 
-          <!-- Final Actions -->
-          <div class="mt-4 d-flex justify-content-between">
-            <router-link to="/quizzes" class="btn btn-secondary">
-              Back to Quizzes
-            </router-link>
-            <div>
-              <button
-                class="btn btn-outline-primary me-2"
-                @click="goToQuizDetail"
-              >
-                View Quiz Details
-              </button>
-              <button
-                class="btn btn-success"
-                @click="finishCreating"
-                :disabled="questions.length === 0"
-                :title="questions.length === 0 ? 'Add at least one question' : ''"
-              >
-                {{ questions.length === 0 ? 'Add Questions First' : 'Finish Creating Quiz' }}
-              </button>
+            <div v-if="showQuestionForm" style="margin-top:16px;">
+              <QuestionForm
+                :quiz-id="createdQuizId"
+                :question="editingQuestion"
+                @saved="handleQuestionSaved"
+                @cancelled="cancelQuestionEdit"
+              />
             </div>
           </div>
         </div>
+
+        <!-- Right column -->
+        <div class="create-right">
+          <!-- Cover image -->
+          <div class="qa-card" style="padding:20px; margin-bottom:16px;">
+            <div class="eyebrow" style="margin-bottom:12px;">NASLOVNA SLIKA</div>
+            <div class="drop-zone" @click="$refs.fileInput.click()">
+              <img v-if="imagePreview" :src="imagePreview" style="width:100%; height:100%; object-fit:cover; border-radius:10px;" />
+              <template v-else>
+                <span style="font-size:24px; color:var(--faint2);">↑</span>
+                <span style="font-size:12.5px; color:var(--faint); font-family:monospace;">povucite sliku · maks. 2MB</span>
+              </template>
+            </div>
+            <input ref="fileInput" type="file" accept="image/*" @change="handleImageChange" style="display:none;" />
+            <button v-if="imagePreview" class="btn-danger-text" style="margin-top:8px; font-size:12px;" @click="clearImage">Ukloni</button>
+          </div>
+
+          <!-- Settings -->
+          <div class="qa-card" style="padding:20px;">
+            <div class="eyebrow" style="margin-bottom:14px;">POSTAVKE</div>
+
+            <label class="qa-label">Kategorija</label>
+            <select class="qa-select" style="margin-bottom:14px;" v-model="form.category">
+              <option value="">Odaberite kategoriju</option>
+              <option value="General Knowledge">Opće znanje</option>
+              <option value="Science">Znanost</option>
+              <option value="History">Povijest</option>
+              <option value="Geography">Geografija</option>
+              <option value="Sports">Sport</option>
+              <option value="Computer Science">Računarstvo</option>
+            </select>
+
+            <label class="qa-label">Težina</label>
+            <div class="diff-segment">
+              <button
+                v-for="d in ['easy', 'medium', 'hard']"
+                :key="d"
+                :class="{ active: form.difficulty === d }"
+                @click="form.difficulty = d"
+              >{{ diffLabel(d) }}</button>
+            </div>
+
+            <label class="qa-label" style="margin-top:14px;">Vremensko ograničenje (min)</label>
+            <input type="number" class="qa-input" v-model.number="form.duration" min="1" placeholder="15" />
+          </div>
+        </div>
+      </div>
+
+      <div v-if="error" style="background:#ffe9e2; color:var(--danger-text); padding:12px 14px; border-radius:10px; font-weight:700; margin-top:16px;">
+        {{ error }}
       </div>
     </div>
   </div>
@@ -235,18 +150,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import QuestionForm from '../components/QuestionForm.vue'
+import RichTextEditor from '../components/RichTextEditor.vue'
 
 const router = useRouter()
-
-const form = ref({
-  title: '',
-  description: '',
-  category: '',
-  difficulty: '',
-  duration: null,
-  is_active: true,
-})
-
+const form = ref({ title: '', description: '', category: '', difficulty: 'medium', duration: null, is_active: true })
 const loading = ref(false)
 const error = ref(null)
 const imageFile = ref(null)
@@ -256,158 +163,179 @@ const questions = ref([])
 const showQuestionForm = ref(false)
 const editingQuestion = ref(null)
 
-const handleImageChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      error.value = 'Image size must be less than 2MB'
-      return
-    }
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
-    if (!validTypes.includes(file.type)) {
-      error.value = 'Invalid image format. Please use JPEG, PNG, JPG, GIF, or WEBP'
-      return
-    }
-
-    imageFile.value = file
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target.result
-    }
-    reader.readAsDataURL(file)
-    error.value = null
-  }
+const formatType = (t) => {
+  if (t === 'multiple_choice') return 'Višestruki izbor'
+  if (t === 'true_false') return 'Točno/Netočno'
+  return 'Kratki odgovor'
+}
+const typePillClass = (t) => {
+  if (t === 'true_false') return 'pill-medium'
+  if (t === 'short_answer') return 'pill-teacher'
+  return 'pill-student'
+}
+const diffLabel = (d) => {
+  if (d === 'easy') return 'Lagano'
+  if (d === 'medium') return 'Srednje'
+  if (d === 'hard') return 'Teško'
+  return d
 }
 
-const clearImage = () => {
-  imageFile.value = null
-  imagePreview.value = null
-  const fileInput = document.getElementById('image')
-  if (fileInput) {
-    fileInput.value = ''
-  }
+const handleImageChange = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) { error.value = 'Slika mora biti manja od 2MB'; return }
+  imageFile.value = file
+  const reader = new FileReader()
+  reader.onload = (ev) => { imagePreview.value = ev.target.result }
+  reader.readAsDataURL(file)
+  error.value = null
 }
+const clearImage = () => { imageFile.value = null; imagePreview.value = null }
 
 const handleSubmit = async () => {
   loading.value = true
   error.value = null
-
   try {
-    // Create FormData for file upload
-    const formData = new FormData()
-    formData.append('title', form.value.title)
-    formData.append('description', form.value.description || '')
-    formData.append('category', form.value.category || '')
-    formData.append('difficulty', form.value.difficulty || '')
-    if (form.value.duration) {
-      formData.append('duration', form.value.duration)
-    }
-    formData.append('is_active', form.value.is_active ? '1' : '0')
+    const fd = new FormData()
+    fd.append('title', form.value.title)
+    fd.append('description', form.value.description || '')
+    fd.append('category', form.value.category || '')
+    fd.append('difficulty', form.value.difficulty || '')
+    if (form.value.duration) fd.append('duration', form.value.duration)
+    fd.append('is_active', form.value.is_active ? '1' : '0')
+    if (imageFile.value) fd.append('image', imageFile.value)
 
-    if (imageFile.value) {
-      formData.append('image', imageFile.value)
-    }
-
-    const response = await api.post('/quizzes', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-
-    // Spremi ID kreiranog kviza i prikaži formu za pitanja
-    createdQuizId.value = response.data.quiz.id
+    const r = await api.post('/quizzes', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    createdQuizId.value = r.data.quiz.id
     showQuestionForm.value = true
-    
-    // Fetch existing questions if any
     await fetchQuestions()
   } catch (err) {
-    console.error('Error creating quiz:', err)
-    if (err.response?.data?.errors) {
-      const errors = Object.values(err.response.data.errors).flat()
-      error.value = errors.join(', ')
-    } else {
-      error.value = err.response?.data?.message || 'Failed to create quiz. Please try again.'
-    }
-  } finally {
-    loading.value = false
-  }
+    if (err.response?.data?.errors) error.value = Object.values(err.response.data.errors).flat().join(', ')
+    else error.value = err.response?.data?.message || 'Kreiranje kviza nije uspjelo.'
+  } finally { loading.value = false }
 }
 
 const fetchQuestions = async () => {
   if (!createdQuizId.value) return
-  
   try {
-    const response = await api.get(`/questions?quiz_id=${createdQuizId.value}`)
-    questions.value = response.data.data || response.data || []
-  } catch (error) {
-    console.error('Error fetching questions:', error)
-  }
+    const r = await api.get(`/questions?quiz_id=${createdQuizId.value}`)
+    questions.value = r.data.data || r.data || []
+  } catch {}
 }
 
-const handleQuestionSaved = async (question) => {
+const handleQuestionSaved = async () => {
   showQuestionForm.value = false
   editingQuestion.value = null
   await fetchQuestions()
 }
-
-const editQuestion = (question) => {
-  editingQuestion.value = question
-  showQuestionForm.value = true
-  // Scroll to form
-  setTimeout(() => {
-    const form = document.querySelector('.question-form')
-    if (form) {
-      form.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, 100)
+const editQuestion = (q) => { editingQuestion.value = q; showQuestionForm.value = true }
+const removeQuestion = async (i) => {
+  const q = questions.value[i]
+  if (!q.id) { questions.value.splice(i, 1); return }
+  if (!confirm('Ukloniti ovo pitanje?')) return
+  try { await api.delete(`/questions/${q.id}`); await fetchQuestions() } catch {}
 }
-
-const removeQuestion = async (index) => {
-  const question = questions.value[index]
-  if (!question.id) {
-    // Ako nema ID, samo ukloni iz liste (još nije spremljeno)
-    questions.value.splice(index, 1)
-    return
-  }
-
-  if (!confirm('Are you sure you want to remove this question?')) return
-
-  try {
-    await api.delete(`/questions/${question.id}`)
-    await fetchQuestions()
-  } catch (error) {
-    console.error('Error deleting question:', error)
-    alert('Failed to delete question. Please try again.')
-  }
-}
-
-const cancelQuestionEdit = () => {
-  editingQuestion.value = null
-  showQuestionForm.value = false
-}
-
-const goToQuizDetail = () => {
-  router.push({
-    name: 'QuizDetail',
-    params: { id: createdQuizId.value },
-  })
-}
-
-const finishCreating = () => {
-  router.push({
-    name: 'QuizDetail',
-    params: { id: createdQuizId.value },
-  })
-}
+const cancelQuestionEdit = () => { editingQuestion.value = null; showQuestionForm.value = false }
+const finishCreating = () => { router.push({ name: 'QuizDetail', params: { id: createdQuizId.value } }) }
 </script>
 
 <style scoped>
-.quiz-create {
-  min-height: 70vh;
+.create-page { min-height: 70vh; }
+.create-inner { max-width: 1080px; margin: 0 auto; padding: 26px 28px 64px; }
+.create-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+.title-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--line);
+  padding: 8px 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ink);
+  outline: none;
+  background: transparent;
+}
+.title-input::placeholder { color: var(--faint2); }
+.title-input:focus { border-bottom-color: var(--accent); }
+
+.questions-list { display: flex; flex-direction: column; gap: 6px; }
+.question-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.q-num-tile {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: var(--mint-soft);
+  color: var(--success-deep);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; flex-shrink: 0;
+}
+
+.add-question-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--faint);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: border-color .15s, color .15s;
+}
+.add-question-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.drop-zone {
+  width: 100%;
+  height: 120px;
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  background: repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(231,239,235,.4) 8px, rgba(231,239,235,.4) 16px);
+  transition: border-color .15s;
+  overflow: hidden;
+}
+.drop-zone:hover { border-color: var(--accent); }
+
+.diff-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.diff-segment button {
+  padding: 10px;
+  border: none;
+  background: var(--surface);
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.diff-segment button + button { border-left: 1px solid var(--line); }
+.diff-segment button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (max-width: 880px) {
+  .create-grid { grid-template-columns: 1fr; }
 }
 </style>

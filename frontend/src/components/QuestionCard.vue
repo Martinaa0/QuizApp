@@ -1,68 +1,47 @@
 <template>
-  <div class="question-card mb-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Question {{ questionNumber }} of {{ totalQuestions }}</h5>
-        <span class="badge bg-primary">{{ question.points }} point(s)</span>
+  <div class="question-card fade-in">
+    <div class="qc-card qa-card elevated" style="padding:30px; border-radius:18px;">
+      <!-- Top row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <span class="pill pill-sm pill-student">{{ formatType(question.type) }}</span>
+        <span style="font-size:13px; font-weight:700; color:var(--accent);">+{{ question.points }} bodova</span>
       </div>
-      <div class="card-body">
-        <h6 class="card-title mb-3" v-html="question.text"></h6>
 
-        <!-- Multiple Choice / True False -->
-        <div v-if="question.type === 'multiple_choice' || question.type === 'true_false'">
-          <div
-            v-for="option in question.options"
-            :key="option.id"
-            class="form-check mb-2"
-          >
-            <input
-              class="form-check-input"
-              type="radio"
-              :name="`question-${question.id}`"
-              :id="`option-${option.id}`"
-              :value="option.id"
-              :checked="selectedOption === option.id"
-              @change="selectOption(option.id)"
-              :disabled="isSubmitted"
-            />
-            <label
-              class="form-check-label"
-              :for="`option-${option.id}`"
-              :class="{
-                'text-success': isSubmitted && option.is_correct,
-                'text-danger': isSubmitted && selectedOption === option.id && !option.is_correct,
-              }"
-            >
-              {{ option.text }}
-            </label>
-          </div>
-        </div>
+      <!-- Question text -->
+      <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; line-height:1.3; margin-bottom:20px;" v-html="question.text"></h2>
 
-        <!-- Short Answer -->
-        <div v-else-if="question.type === 'short_answer'">
-          <input
-            type="text"
-            class="form-control"
-            v-model="answerText"
-            @input="updateAnswer"
-            :disabled="isSubmitted"
-            placeholder="Enter your answer"
-          />
-        </div>
+      <!-- Multiple Choice / True False options -->
+      <div v-if="question.type === 'multiple_choice' || question.type === 'true_false'" class="options-grid">
+        <button
+          v-for="(option, idx) in question.options"
+          :key="option.id"
+          class="option-btn"
+          :class="{ selected: selectedOption === option.id }"
+          @click="selectOption(option.id)"
+          :disabled="isSubmitted"
+        >
+          <div class="option-key">{{ keys[idx] }}</div>
+          <span class="option-label">{{ option.text }}</span>
+          <span v-if="selectedOption === option.id" class="option-dot">●</span>
+        </button>
+      </div>
 
-        <!-- Feedback nakon submita -->
-        <div v-if="isSubmitted && answerFeedback" class="mt-3">
-          <div
-            class="alert"
-            :class="answerFeedback.is_correct ? 'alert-success' : 'alert-danger'"
-          >
-            <strong v-if="answerFeedback.is_correct">Correct!</strong>
-            <strong v-else>Incorrect.</strong>
-            <span v-if="answerFeedback.points_earned > 0">
-              You earned {{ answerFeedback.points_earned }} point(s).
-            </span>
-          </div>
-        </div>
+      <!-- Short Answer -->
+      <div v-else-if="question.type === 'short_answer'">
+        <input
+          type="text"
+          class="qa-input"
+          v-model="answerText"
+          @input="updateAnswer"
+          :disabled="isSubmitted"
+          placeholder="Upišite svoj odgovor…"
+        />
+      </div>
+
+      <!-- Feedback -->
+      <div v-if="answerFeedback" class="feedback-box" :class="answerFeedback.is_correct ? 'correct' : 'incorrect'">
+        <strong>{{ answerFeedback.is_correct ? 'Točno!' : 'Netočno.' }}</strong>
+        <span v-if="answerFeedback.points_earned > 0"> +{{ answerFeedback.points_earned }} pts</span>
       </div>
     </div>
   </div>
@@ -72,83 +51,105 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  question: {
-    type: Object,
-    required: true,
-  },
-  questionNumber: {
-    type: Number,
-    required: true,
-  },
-  totalQuestions: {
-    type: Number,
-    required: true,
-  },
-  isSubmitted: {
-    type: Boolean,
-    default: false,
-  },
-  answerFeedback: {
-    type: Object,
-    default: null,
-  },
+  question: { type: Object, required: true },
+  questionNumber: { type: Number, required: true },
+  totalQuestions: { type: Number, required: true },
+  isSubmitted: { type: Boolean, default: false },
+  answerFeedback: { type: Object, default: null },
 })
 
 const emit = defineEmits(['answer-selected'])
-
 const selectedOption = ref(null)
 const answerText = ref('')
+const keys = ['A', 'B', 'C', 'D', 'E', 'F']
+
+const formatType = (t) => {
+  if (t === 'multiple_choice') return 'Višestruki izbor'
+  if (t === 'true_false') return 'Točno / Netočno'
+  return 'Kratki odgovor'
+}
 
 const selectOption = (optionId) => {
   selectedOption.value = optionId
-  emit('answer-selected', {
-    question_id: props.question.id,
-    option_id: optionId,
-  })
+  emit('answer-selected', { question_id: props.question.id, option_id: optionId })
 }
 
 const updateAnswer = () => {
-  emit('answer-selected', {
-    question_id: props.question.id,
-    answer_text: answerText.value,
-  })
+  emit('answer-selected', { question_id: props.question.id, answer_text: answerText.value })
 }
 
-// Ako već postoji odgovor, postavi ga
-watch(
-  () => props.answerFeedback,
-  (feedback) => {
-    if (feedback) {
-      if (feedback.option_id) {
-        selectedOption.value = feedback.option_id
-      }
-      if (feedback.answer_text) {
-        answerText.value = feedback.answer_text
-      }
-    }
-  },
-  { immediate: true }
-)
+// Reset on question change
+watch(() => props.question.id, () => {
+  selectedOption.value = null
+  answerText.value = ''
+})
+
+watch(() => props.answerFeedback, (f) => {
+  if (f?.option_id) selectedOption.value = f.option_id
+  if (f?.answer_text) answerText.value = f.answer_text
+}, { immediate: true })
 </script>
 
 <style scoped>
-.question-card {
-  animation: fadeIn 0.3s;
+.options-grid {
+  display: grid;
+  gap: 12px;
+}
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--body-text);
+  text-align: left;
+  transition: all .15s;
+  width: 100%;
+}
+.option-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--mint-soft2);
+}
+.option-btn.selected {
+  border: 2px solid var(--accent);
+  background: var(--mint-soft2);
+  color: #2f6b5c;
+}
+.option-btn:disabled { cursor: default; opacity: .8; }
+
+.option-key {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--page-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted2);
+  flex-shrink: 0;
+}
+.option-btn.selected .option-key {
+  background: var(--accent);
+  color: #fff;
+}
+.option-label { flex: 1; }
+.option-dot {
+  color: var(--accent);
+  font-size: 14px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.feedback-box {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
 }
-
-.form-check-input:checked {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-}
+.feedback-box.correct { background: #e7f5ee; color: var(--success-deep); }
+.feedback-box.incorrect { background: #ffe9e2; color: var(--danger-text); }
 </style>

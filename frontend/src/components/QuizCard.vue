@@ -1,122 +1,123 @@
 <template>
-  <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm quiz-card">
-      <div v-if="quizImageUrl && !quiz.is_external" class="card-img-top-container">
-        <img :src="quizImageUrl" class="card-img-top" :alt="quiz.title" />
+  <router-link :to="{ name: 'QuizDetail', params: { id: quiz.id } }" class="quiz-card-link">
+    <div class="quiz-card qa-card hoverable">
+      <!-- Cover band -->
+      <div class="card-cover" :class="catClass">
+        <div class="cover-emoji">{{ catEmoji }}</div>
+        <div class="cover-diff pill pill-sm" :class="diffClass">{{ quiz.difficulty || 'medium' }}</div>
       </div>
-      <div v-if="quiz.is_external" class="card-img-top-container bg-primary text-white text-center p-4 d-flex flex-column justify-content-center">
-        <div style="font-size: 3rem;">📚</div>
-        <div class="small mt-2">External Quiz</div>
-      </div>
-      <div class="card-body d-flex flex-column">
-        <div class="mb-2">
-          <span
-            class="badge"
-            :class="{
-              'bg-success': quiz.difficulty === 'easy',
-              'bg-warning text-dark': quiz.difficulty === 'medium',
-              'bg-danger': quiz.difficulty === 'hard',
-            }"
-          >
-            {{ quiz.difficulty }}
-          </span>
-          <span v-if="quiz.category" class="badge bg-info ms-2">
-            {{ quiz.category }}
-          </span>
-          <span v-if="quiz.duration" class="badge bg-secondary ms-2">
-            {{ quiz.duration }} min
-          </span>
-          <span v-if="quiz.is_external" class="badge bg-primary ms-2">
-            🌐 External
-          </span>
-        </div>
-        <h5 class="card-title">{{ quiz.title }}</h5>
-        <p class="card-text flex-grow-1 text-muted" style="line-height: 1.6; min-height: 3em;">
-          {{ truncateDescription(quiz.description) }}
-        </p>
-        <div class="mt-auto">
-          <div v-if="quiz.is_external" class="text-muted small mb-2">
-            Source: Open Trivia Database
-          </div>
-          <div v-else-if="quiz.creator" class="text-muted small mb-2">
-            Created by: {{ quiz.creator?.name || 'Unknown' }}
-          </div>
-          <div class="text-muted small mb-2">
-            {{ quiz.questions?.length || quiz.question_count || quiz.questions_count || 0 }} question(s)
-          </div>
-          <router-link
-            :to="{ name: 'QuizDetail', params: { id: quiz.id } }"
-            class="btn btn-primary w-100"
-          >
-            {{ quiz.is_external ? 'Start Quiz' : 'View Quiz' }}
-          </router-link>
+      <!-- Body -->
+      <div class="card-body">
+        <div class="card-eyebrow eyebrow" :style="{ color: 'var(--cat-color, var(--muted))' }">{{ quiz.category || 'General' }}</div>
+        <div class="card-title">{{ quiz.title }}</div>
+        <div class="card-footer-row">
+          <span class="card-meta">◷ {{ quiz.duration || '?' }} min</span>
+          <span class="card-meta">❓ {{ quiz.questions?.length || quiz.question_count || quiz.questions_count || 0 }} Q</span>
+          <span class="card-author">{{ authorName }}</span>
         </div>
       </div>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 
 const props = defineProps({
-  quiz: {
-    type: Object,
-    required: true,
-  },
+  quiz: { type: Object, required: true },
 })
 
-const quizImageUrl = computed(() => {
-  if (!props.quiz.image) return null
-  
-  // Ako je već puna URL, vrati direktno
-  if (props.quiz.image.startsWith('http')) {
-    return props.quiz.image
-  }
-  
-  // Inače, konstruiraj URL prema Laravel storage
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-  return `${baseUrl}/storage/${props.quiz.image}`
-})
-
-const truncateDescription = (description) => {
-  if (!description) return 'No description available.'
-  
-  // Ukloni HTML tagove
-  const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = description
-  const plainText = tempDiv.textContent || tempDiv.innerText || ''
-  
-  // Skrati tekst ako je predugačak
-  return plainText.length > 150
-    ? plainText.substring(0, 150).trim() + '...'
-    : plainText.trim()
+const catMap = {
+  geography: { class: 'cat-geography', emoji: '🌍' },
+  'computer science': { class: 'cat-computer-science', emoji: '💻' },
+  science: { class: 'cat-science', emoji: '🔬' },
+  history: { class: 'cat-history', emoji: '📜' },
+  sports: { class: 'cat-sports', emoji: '⚽' },
+  'general knowledge': { class: 'cat-general-knowledge', emoji: '🧠' },
 }
+
+const catKey = computed(() => (props.quiz.category || '').toLowerCase())
+const catClass = computed(() => catMap[catKey.value]?.class || 'cat-general-knowledge')
+const catEmoji = computed(() => catMap[catKey.value]?.emoji || '📚')
+
+const diffClass = computed(() => {
+  const d = (props.quiz.difficulty || '').toLowerCase()
+  if (d === 'easy') return 'pill-easy'
+  if (d === 'hard') return 'pill-hard'
+  return 'pill-medium'
+})
+
+const authorName = computed(() => {
+  if (props.quiz.creator?.name) {
+    const parts = props.quiz.creator.name.split(' ')
+    return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : parts[0]
+  }
+  return props.quiz.is_external ? 'Trivia DB' : ''
+})
 </script>
 
 <style scoped>
-.card {
-  transition: transform 0.2s, box-shadow 0.2s;
+.quiz-card-link {
+  text-decoration: none;
+  color: inherit;
 }
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-.card-img-top-container {
-  height: 200px;
+.quiz-card {
   overflow: hidden;
-  background-color: #f8f9fa;
+  border-radius: var(--radius);
 }
 
-.card-img-top {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.card-cover {
+  height: 118px;
+  background: var(--cat-grad, linear-gradient(135deg, #c3b6f7, #a596e0));
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 14px 16px;
+}
+.cover-emoji {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.cover-diff {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,.92) !important;
+  border: none !important;
 }
 
 .card-body {
-  min-height: 200px;
+  padding: 16px 18px 18px;
+}
+.card-eyebrow {
+  margin-bottom: 6px;
+}
+.card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+.card-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--faint);
+  font-weight: 700;
+}
+.card-author {
+  margin-left: auto;
+  color: var(--muted2);
 }
 </style>

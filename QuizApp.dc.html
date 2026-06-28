@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ font-family:'Lato',system-ui,sans-serif; color:#1d2b28; -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:#cdded7; border-radius:10px; border:3px solid transparent; background-clip:content-box; }
+  @keyframes barGrow{ from{ width:0; } }
+</style>
+</helmet>
+
+<div style="display:flex; height:100vh; width:100%; overflow:hidden; background:#f4f8f6; --accent:{{ accent }}; --accent2:{{ accent2 }}; --radius:{{ radiusPx }}; --ink:#1d2b28; --muted:#6c7d77; --line:#e7efeb; --dark:#1f2d2b;">
+
+  <!-- ===== Presentation rail ===== -->
+  <aside style="width:248px; flex:none; background:#ffffff; border-right:1px solid #e7efeb; display:flex; flex-direction:column; height:100%;">
+    <div style="padding:22px 22px 16px; display:flex; align-items:center; gap:11px; border-bottom:1px solid #f0f5f3;">
+      <div style="width:34px; height:34px; border-radius:10px; background:var(--accent,#78c2ad); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px;">Q</div>
+      <div style="line-height:1.1;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:#1d2b28;">QuizApp</div>
+        <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#9aaaa4; font-weight:700;">Design preview</div>
+      </div>
+    </div>
+    <nav style="flex:1; overflow-y:auto; padding:14px 12px 24px;">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+        <div style="margin:6px 0 14px;">
+          <div style="font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:#a3b2ac; font-weight:700; padding:6px 10px 7px;">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+            <button onClick="{{ it.select }}" data-active="{{ it.active }}" style="display:flex; align-items:center; gap:10px; width:100%; text-align:left; border:none; cursor:pointer; padding:9px 11px; border-radius:10px; margin-bottom:2px; font-family:'Lato',sans-serif; font-size:13.5px; font-weight:700; background:{{ it.bg }}; color:{{ it.fg }};">
+              <span style="width:6px; height:6px; border-radius:50%; background:{{ it.dot }}; flex:none;"></span>
+              {{ it.name }}
+            </button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="padding:14px 18px; border-top:1px solid #f0f5f3; font-size:11px; color:#9aaaa4; line-height:1.5;">Minty palette, elevated · Space&nbsp;Grotesk + Lato</div>
+  </aside>
+
+  <!-- ===== Stage ===== -->
+  <main style="flex:1; height:100%; overflow-y:auto; position:relative;">
+
+    <!-- App top bar (logged-in screens) -->
+    <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+      <header style="position:sticky; top:0; z-index:20; height:60px; background:var(--dark,#1f2d2b); display:flex; align-items:center; gap:20px; padding:0 26px; color:#eaf3f0;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <div style="width:26px; height:26px; border-radius:8px; background:var(--accent,#78c2ad); display:flex; align-items:center; justify-content:center; color:#13241f; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;">Q</div>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;">QuizApp</span>
+        </div>
+        <nav style="display:flex; gap:4px; margin-left:8px;">
+          <span style="font-size:13.5px; font-weight:700; padding:7px 12px; border-radius:8px; background:rgba(255,255,255,.12); color:#fff;">Browse</span>
+          <span style="font-size:13.5px; font-weight:700; padding:7px 12px; border-radius:8px; color:#a9c4bd;">Create</span>
+          <span style="font-size:13.5px; font-weight:700; padding:7px 12px; border-radius:8px; color:#a9c4bd;">Multiplayer</span>
+        </nav>
+        <div style="flex:1;"></div>
+        <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; width:230px; color:#9fbab3; font-size:13px;">
+          <span style="font-size:14px;">⌕</span> Search quizzes…
+        </div>
+        <div style="width:34px; height:34px; border-radius:50%; background:var(--accent2,#f3969a); color:#5a1f24; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px;">AM</div>
+      </header>
+    </sc-if>
+
+    <!-- ===================== HOME ===================== -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <section style="min-height:100%; background:#fbfdfc;">
+        <div style="padding:18px 26px; display:flex; align-items:center; gap:18px; border-bottom:1px solid #eef4f1; background:#ffffff;">
+          <div style="display:flex; align-items:center; gap:9px; margin-right:auto;">
+            <div style="width:28px; height:28px; border-radius:8px; background:var(--accent,#78c2ad); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700;">Q</div>
+            <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px;">QuizApp</span>
+          </div>
+          <span style="font-size:14px; font-weight:700; color:#5b6b66;">Browse</span>
+          <span style="font-size:14px; font-weight:700; color:#5b6b66;">Multiplayer</span>
+          <button onClick="{{ goLogin }}" style="border:1px solid #dde7e3; background:#fff; color:#27433c; font-weight:700; font-size:13.5px; padding:9px 16px; border-radius:10px; cursor:pointer; font-family:'Lato',sans-serif;">Sign in</button>
+          <button onClick="{{ goRegister }}" style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:13.5px; padding:9px 17px; border-radius:10px; cursor:pointer; font-family:'Lato',sans-serif;">Get started</button>
+        </div>
+
+        <div style="max-width:1120px; margin:0 auto; padding:74px 32px 56px; display:grid; grid-template-columns:1.05fr .95fr; gap:48px; align-items:center;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:#e8f4ef; color:#2f6b5c; font-weight:700; font-size:12.5px; padding:7px 13px; border-radius:999px; margin-bottom:22px;">● Live multiplayer + 4,000 trivia questions</div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:54px; line-height:1.05; letter-spacing:-.02em; margin:0 0 20px; color:#16241f;">Quizzes that actually feel <span style="color:var(--accent,#78c2ad);">alive.</span></h1>
+            <p style="font-size:17.5px; line-height:1.6; color:#5b6b66; margin:0 0 30px; max-width:480px;">Build rich quizzes, challenge a room in real time, and track every result. For students, teachers, and anyone who loves a good question.</p>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <button onClick="{{ goRegister }}" style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:15px; padding:14px 26px; border-radius:var(--radius,14px); cursor:pointer; font-family:'Lato',sans-serif; box-shadow:0 8px 20px rgba(120,194,173,.35);">Start for free</button>
+              <button onClick="{{ goBrowse }}" style="border:1px solid #dde7e3; background:#fff; color:#27433c; font-weight:700; font-size:15px; padding:14px 24px; border-radius:var(--radius,14px); cursor:pointer; font-family:'Lato',sans-serif;">Browse quizzes →</button>
+            </div>
+            <div style="display:flex; gap:34px; margin-top:42px;">
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px;">12k+</div><div style="font-size:13px; color:#8595900; color:#859590; font-weight:700;">Quizzes created</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px;">98%</div><div style="font-size:13px; color:#859590; font-weight:700;">Finish their quiz</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px;">3 roles</div><div style="font-size:13px; color:#859590; font-weight:700;">Student · Teacher · Admin</div></div>
+            </div>
+          </div>
+
+          <div style="position:relative;">
+            <div style="position:absolute; inset:-18px; background:radial-gradient(120% 120% at 70% 10%, #d7efe6 0%, rgba(215,239,230,0) 60%); border-radius:30px;"></div>
+            <div style="position:relative; background:#fff; border:1px solid #e7efeb; border-radius:20px; box-shadow:0 26px 60px -28px rgba(31,45,43,.4); overflow:hidden;">
+              <div style="height:46px; background:var(--dark,#1f2d2b); display:flex; align-items:center; gap:14px; padding:0 16px;">
+                <div style="display:flex; gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#ff7851;"></span><span style="width:10px;height:10px;border-radius:50%;background:#f9c74f;"></span><span style="width:10px;height:10px;border-radius:50%;background:#56cc9d;"></span></div>
+                <span style="color:#9fbab3; font-size:12px; font-weight:700;">World Capitals · Question 3 / 10</span>
+              </div>
+              <div style="padding:24px;">
+                <div style="height:7px; background:#eef4f1; border-radius:99px; overflow:hidden; margin-bottom:20px;"><div style="height:100%; width:30%; background:var(--accent,#78c2ad); border-radius:99px;"></div></div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:21px; margin-bottom:18px; line-height:1.3;">What is the capital of Australia?</div>
+                <div style="display:grid; gap:10px;">
+                  <div style="padding:14px 16px; border:1px solid #e7efeb; border-radius:12px; font-weight:700; color:#3a4b46;">Sydney</div>
+                  <div style="padding:14px 16px; border:2px solid var(--accent,#78c2ad); background:#eef8f4; border-radius:12px; font-weight:700; color:#2f6b5c; display:flex; justify-content:space-between;">Canberra <span>✓</span></div>
+                  <div style="padding:14px 16px; border:1px solid #e7efeb; border-radius:12px; font-weight:700; color:#3a4b46;">Melbourne</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px; align-items:center;">
+                  <span style="font-size:13px; color:#859590; font-weight:700;">+10 points</span>
+                  <span style="background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:13.5px; padding:9px 18px; border-radius:10px;">Next →</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="max-width:1120px; margin:0 auto; padding:20px 32px 80px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+          <sc-for list="{{ features }}" as="f" hint-placeholder-count="3">
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:var(--radius,16px); padding:26px;">
+              <div style="width:42px; height:42px; border-radius:12px; background:{{ f.tint }}; color:{{ f.ink }}; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; margin-bottom:16px;">{{ f.icon }}</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; margin-bottom:8px;">{{ f.title }}</div>
+              <div style="font-size:14.5px; line-height:1.6; color:#5b6b66;">{{ f.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== LOGIN ===================== -->
+    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+      <section style="min-height:100%; display:grid; grid-template-columns:1fr 1fr;">
+        <div style="display:flex; align-items:center; justify-content:center; padding:40px;">
+          <div style="width:100%; max-width:380px;">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:34px;">
+              <div style="width:30px; height:30px; border-radius:9px; background:var(--accent,#78c2ad); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700;">Q</div>
+              <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px;">QuizApp</span>
+            </div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; margin:0 0 8px;">Welcome back</h1>
+            <p style="color:#5b6b66; font-size:15px; margin:0 0 28px;">Sign in to keep building and playing.</p>
+            <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Email or username</label>
+            <div style="display:flex; align-items:center; gap:10px; border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; margin-bottom:16px;"><span style="color:#aab8b3;">@</span><span style="color:#9aaaa4; font-size:15px;">you@example.com</span></div>
+            <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Password</label>
+            <div style="display:flex; align-items:center; gap:10px; border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; margin-bottom:10px;"><span style="color:#aab8b3;">•</span><span style="letter-spacing:3px; color:#9aaaa4;">••••••••</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;"><span style="font-size:13px; color:#5b6b66;">Remember me</span><span style="font-size:13px; font-weight:700; color:var(--accent,#78c2ad);">Forgot password?</span></div>
+            <button style="width:100%; border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:15px; padding:14px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">Sign in</button>
+            <div style="text-align:center; margin:18px 0; color:#aab8b3; font-size:13px;">or</div>
+            <button style="width:100%; border:1px solid #dde7e3; background:#fff; color:#27433c; font-weight:700; font-size:14px; padding:13px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">Continue with Google</button>
+            <p style="text-align:center; margin-top:26px; font-size:14px; color:#5b6b66;">New here? <span onClick="{{ goRegister }}" style="color:var(--accent,#78c2ad); font-weight:700; cursor:pointer;">Create an account</span></p>
+            <p style="text-align:center; margin-top:10px; font-size:12.5px; color:#aab8b3;">Admin? <span onClick="{{ goAdmin }}" style="font-weight:700; cursor:pointer; color:#5b6b66;">Admin portal →</span></p>
+          </div>
+        </div>
+        <div style="background:var(--dark,#1f2d2b); display:flex; align-items:center; justify-content:center; padding:40px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:-80px; right:-80px; width:280px; height:280px; border-radius:50%; background:rgba(120,194,173,.16);"></div>
+          <div style="position:absolute; bottom:-60px; left:-40px; width:200px; height:200px; border-radius:50%; background:rgba(243,150,154,.12);"></div>
+          <div style="position:relative; color:#eaf3f0; max-width:360px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; line-height:1.25; margin-bottom:18px;">“The fastest way I've found to quiz a class of 30.”</div>
+            <p style="color:#9fbab3; font-size:15px; line-height:1.6;">Live leaderboards, instant scoring, and zero setup. Students just type a 6-character code and they're in.</p>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:26px;"><div style="width:42px; height:42px; border-radius:50%; background:var(--accent2,#f3969a); color:#5a1f24; display:flex; align-items:center; justify-content:center; font-weight:900;">RT</div><div><div style="font-weight:700;">Rosa Tan</div><div style="color:#9fbab3; font-size:13px;">Teacher · Lincoln High</div></div></div>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== REGISTER ===================== -->
+    <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ true }}">
+      <section style="min-height:100%; background:#fbfdfc; display:flex; align-items:center; justify-content:center; padding:48px 32px;">
+        <div style="width:100%; max-width:460px; background:#fff; border:1px solid #e7efeb; border-radius:20px; box-shadow:0 20px 50px -32px rgba(31,45,43,.35); padding:38px;">
+          <div style="display:flex; align-items:center; gap:9px; margin-bottom:24px;">
+            <div style="width:30px; height:30px; border-radius:9px; background:var(--accent,#78c2ad); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700;">Q</div>
+            <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px;">Create your account</span>
+          </div>
+          <p style="color:#5b6b66; font-size:15px; margin:0 0 26px;">Free forever for students. No card required.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+            <div><label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Full name</label><div style="border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; color:#9aaaa4; font-size:14px;">Alex Morgan</div></div>
+            <div><label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Username</label><div style="border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; color:#9aaaa4; font-size:14px;">@alexm</div></div>
+          </div>
+          <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Email</label>
+          <div style="border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; color:#9aaaa4; font-size:14px; margin-bottom:14px;">alex@example.com</div>
+          <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">I am a…</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+            <div style="border:2px solid var(--accent,#78c2ad); background:#eef8f4; border-radius:12px; padding:13px; text-align:center; font-weight:700; color:#2f6b5c;">Student</div>
+            <div style="border:1px solid #dde7e3; border-radius:12px; padding:13px; text-align:center; font-weight:700; color:#5b6b66;">Teacher</div>
+          </div>
+          <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:7px;">Password</label>
+          <div style="border:1px solid #dde7e3; border-radius:12px; padding:13px 14px; color:#9aaaa4; letter-spacing:3px; margin-bottom:22px;">••••••••</div>
+          <button style="width:100%; border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:15px; padding:14px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">Create account</button>
+          <p style="text-align:center; margin-top:22px; font-size:14px; color:#5b6b66;">Already have one? <span onClick="{{ goLogin }}" style="color:var(--accent,#78c2ad); font-weight:700; cursor:pointer;">Sign in</span></p>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== BROWSE ===================== -->
+    <sc-if value="{{ isBrowse }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:1160px; margin:0 auto; padding:30px 28px 64px;">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:22px;">
+          <div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; margin:0 0 6px;">Browse quizzes</h1>
+            <p style="color:#5b6b66; font-size:15px; margin:0;">{{ quizCount }} quizzes · find one to take or remix</p>
+          </div>
+          <button onClick="{{ goCreate }}" style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:14px; padding:12px 20px; border-radius:11px; cursor:pointer; font-family:'Lato',sans-serif;">+ New quiz</button>
+        </div>
+
+        <div style="background:#fff; border:1px solid #e7efeb; border-radius:14px; padding:14px; display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px; display:flex; align-items:center; gap:9px; background:#f4f8f6; border-radius:10px; padding:11px 13px;">
+            <span style="color:#9aaaa4;">⌕</span>
+            <input value="{{ searchVal }}" onChange="{{ onSearch }}" placeholder="Search by title or topic…" style="border:none; outline:none; background:transparent; flex:1; min-width:0; font-family:'Lato',sans-serif; font-size:14px; color:#3a4b46;" />
+          </div>
+          <div style="position:relative;">
+            <button onClick="{{ toggleCat }}" style="display:flex; align-items:center; gap:8px; border:1px solid #e2ece8; background:#fff; border-radius:10px; padding:10px 13px; font-size:13.5px; font-weight:700; color:#4a5b56; cursor:pointer; font-family:'Lato',sans-serif;">{{ categoryLabel }} <span style="color:#aab8b3;">▾</span></button>
+            <sc-if value="{{ catOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; top:calc(100% + 6px); left:0; z-index:30; background:#fff; border:1px solid #e7efeb; border-radius:12px; box-shadow:0 14px 32px -14px rgba(31,45,43,.35); padding:6px; min-width:200px;">
+                <sc-for list="{{ categoryOptions }}" as="o" hint-placeholder-count="6">
+                  <button onClick="{{ o.select }}" style="display:block; width:100%; text-align:left; border:none; cursor:pointer; padding:9px 11px; border-radius:8px; font-size:13.5px; font-weight:700; font-family:'Lato',sans-serif; background:{{ o.bg }}; color:{{ o.fg }};">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <div style="position:relative;">
+            <button onClick="{{ toggleStatus }}" style="display:flex; align-items:center; gap:8px; border:1px solid #e2ece8; background:#fff; border-radius:10px; padding:10px 13px; font-size:13.5px; font-weight:700; color:#4a5b56; cursor:pointer; font-family:'Lato',sans-serif;">{{ statusLabel }} <span style="color:#aab8b3;">▾</span></button>
+            <sc-if value="{{ statusOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; top:calc(100% + 6px); right:0; z-index:30; background:#fff; border:1px solid #e7efeb; border-radius:12px; box-shadow:0 14px 32px -14px rgba(31,45,43,.35); padding:6px; min-width:170px;">
+                <sc-for list="{{ statusOptions }}" as="o" hint-placeholder-count="4">
+                  <button onClick="{{ o.select }}" style="display:block; width:100%; text-align:left; border:none; cursor:pointer; padding:9px 11px; border-radius:8px; font-size:13.5px; font-weight:700; font-family:'Lato',sans-serif; background:{{ o.bg }}; color:{{ o.fg }};">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <sc-for list="{{ diffChips }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.toggle }}" style="font-size:12.5px; font-weight:700; padding:9px 13px; border-radius:999px; cursor:pointer; font-family:'Lato',sans-serif; background:{{ c.bg }}; color:{{ c.fg }}; border:1px solid {{ c.bd }};">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearFilters }}" style="border:none; background:transparent; color:#c5512a; font-weight:700; font-size:13px; cursor:pointer; font-family:'Lato',sans-serif; padding:8px 6px;">Clear ✕</button>
+          </sc-if>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+          <sc-for list="{{ quizzes }}" as="q" hint-placeholder-count="6">
+            <div onClick="{{ goDetail }}" style="background:#fff; border:1px solid #e7efeb; border-radius:var(--radius,16px); overflow:hidden; cursor:pointer; box-shadow:0 1px 2px rgba(31,45,43,.04);">
+              <div style="height:118px; background:{{ q.cover }}; position:relative; display:flex; align-items:flex-end; padding:12px;">
+                <div style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,.92); color:{{ q.diffFg }}; font-weight:700; font-size:11.5px; padding:5px 10px; border-radius:999px;">{{ q.diff }}</div>
+                <div style="width:46px; height:46px; border-radius:12px; background:rgba(255,255,255,.85); display:flex; align-items:center; justify-content:center; font-size:24px;">{{ q.icon }}</div>
+              </div>
+              <div style="padding:16px 16px 18px;">
+                <div style="font-size:11.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:{{ q.catFg }}; margin-bottom:7px;">{{ q.cat }}</div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; line-height:1.25; margin-bottom:12px;">{{ q.title }}</div>
+                <div style="display:flex; align-items:center; gap:14px; font-size:12.5px; color:#859590; font-weight:700; padding-top:12px; border-top:1px solid #f0f5f3;">
+                  <span>◷ {{ q.dur }}</span><span>❓ {{ q.qs }} Q</span><span style="margin-left:auto; color:#5b6b66;">{{ q.author }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== DETAIL ===================== -->
+    <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:1020px; margin:0 auto; padding:30px 28px 64px;">
+        <div style="font-size:13px; color:#859590; font-weight:700; margin-bottom:16px;"><span onClick="{{ goBrowse }}" style="cursor:pointer; color:var(--accent,#78c2ad);">Browse</span> &nbsp;/&nbsp; Geography &nbsp;/&nbsp; World Capitals</div>
+        <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:28px; align-items:start;">
+          <div>
+            <div style="height:220px; border-radius:18px; background:linear-gradient(135deg,#9fe0cc,#78c2ad); display:flex; align-items:center; justify-content:center; font-size:72px; margin-bottom:22px;">🌍</div>
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+              <span style="background:#e8f4ef; color:#2f6b5c; font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px;">Geography</span>
+              <span style="background:#fbf2dd; color:#9c7212; font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px;">Medium</span>
+              <span style="background:#f4f8f6; color:#5b6b66; font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px;">◷ 10 min</span>
+            </div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; margin:0 0 14px; line-height:1.15;">World Capitals Challenge</h1>
+            <p style="font-size:16px; line-height:1.7; color:#4a5b56; margin:0 0 22px;">Think you know your capitals? This 15-question sprint covers every continent — from the obvious to the deliberately sneaky. Earn bonus points for the tough ones and see how you stack up against everyone else.</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <sc-for list="{{ detailFacts }}" as="d" hint-placeholder-count="3">
+                <div style="border:1px solid #e7efeb; border-radius:12px; padding:13px 18px; min-width:120px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px;">{{ d.v }}</div><div style="font-size:12.5px; color:#859590; font-weight:700;">{{ d.k }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="position:sticky; top:80px; background:#fff; border:1px solid #e7efeb; border-radius:18px; padding:24px; box-shadow:0 14px 36px -26px rgba(31,45,43,.4);">
+            <div style="display:flex; align-items:center; gap:11px; margin-bottom:20px;"><div style="width:40px; height:40px; border-radius:50%; background:#9fe0cc; display:flex; align-items:center; justify-content:center; font-weight:900; color:#1f5e4d;">RT</div><div><div style="font-weight:700; font-size:14px;">Rosa Tan</div><div style="font-size:12.5px; color:#859590;">Teacher · 24 quizzes</div></div></div>
+            <div style="background:#f4f8f6; border-radius:12px; padding:16px; margin-bottom:18px;">
+              <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px;"><span style="color:#5b6b66;">Questions</span><span style="font-weight:700;">15</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px;"><span style="color:#5b6b66;">Time limit</span><span style="font-weight:700;">10 minutes</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px;"><span style="color:#5b6b66;">Total points</span><span style="font-weight:700;">150</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:#5b6b66;">Attempts</span><span style="font-weight:700;">1,204</span></div>
+            </div>
+            <button onClick="{{ goTake }}" style="width:100%; border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:15px; padding:14px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif; margin-bottom:10px; box-shadow:0 8px 18px rgba(120,194,173,.35);">Start quiz →</button>
+            <button onClick="{{ goLobby }}" style="width:100%; border:1px solid #dde7e3; background:#fff; color:#27433c; font-weight:700; font-size:14px; padding:12px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">Play with friends</button>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== TAKE ===================== -->
+    <sc-if value="{{ isTake }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:760px; margin:0 auto; padding:26px 28px 56px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <div style="font-size:13.5px; font-weight:700; color:#5b6b66;">Question {{ qNum }} <span style="color:#aab8b3;">of {{ total }}</span></div>
+          <div style="display:flex; align-items:center; gap:8px; background:{{ tBg }}; color:{{ tColor }}; font-weight:700; font-size:15px; padding:9px 15px; border-radius:11px; font-variant-numeric:tabular-nums;"><span>◷</span>{{ tText }}</div>
+        </div>
+        <div style="height:8px; background:#eef4f1; border-radius:99px; overflow:hidden; margin-bottom:26px;"><div style="height:100%; width:{{ progressPct }}; background:var(--accent,#78c2ad); border-radius:99px; transition:width .3s ease;"></div></div>
+
+        <div style="background:#fff; border:1px solid #e7efeb; border-radius:18px; padding:30px; box-shadow:0 14px 36px -28px rgba(31,45,43,.35);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <span style="background:#e8f4ef; color:#2f6b5c; font-weight:700; font-size:12px; padding:5px 11px; border-radius:999px;">{{ cqType }}</span>
+            <span style="font-size:12.5px; color:#859590; font-weight:700;">{{ cqPts }}</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; line-height:1.3; margin:0 0 24px;">{{ cqText }}</h2>
+          <div style="display:grid; gap:12px;">
+            <sc-for list="{{ takeOptions }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.pick }}" style="display:flex; align-items:center; gap:14px; text-align:left; cursor:pointer; padding:16px 18px; border-radius:13px; font-family:'Lato',sans-serif; font-size:16px; font-weight:700; background:{{ o.bg }}; border:{{ o.border }}; color:{{ o.fg }};">
+                <span style="width:28px; height:28px; flex:none; border-radius:8px; background:{{ o.keyBg }}; color:{{ o.keyFg }}; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900;">{{ o.key }}</span>
+                {{ o.label }}
+                <span style="margin-left:auto; color:var(--accent,#78c2ad); font-size:18px;">{{ o.check }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; margin-top:22px; gap:12px;">
+          <button onClick="{{ prevQuiz }}" style="border:1px solid #dde7e3; background:#fff; color:#5b6b66; font-weight:700; font-size:14.5px; padding:13px 22px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">← Previous</button>
+          <div style="display:flex; gap:10px;">
+            <button onClick="{{ skipQuiz }}" style="border:1px solid #dde7e3; background:#fff; color:#5b6b66; font-weight:700; font-size:14.5px; padding:13px 18px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">Skip</button>
+            <button onClick="{{ nextQuiz }}" style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:14.5px; padding:13px 26px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">{{ nextLabel }}</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; justify-content:center; margin-top:24px; flex-wrap:wrap;">
+          <sc-for list="{{ qdots }}" as="d" hint-placeholder-count="5">
+            <button onClick="{{ d.jump }}" style="width:30px; height:30px; border:none; cursor:pointer; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'Lato',sans-serif; background:{{ d.bg }}; color:{{ d.fg }};">{{ d.n }}</button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== RESULTS ===================== -->
+    <sc-if value="{{ isResults }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:900px; margin:0 auto; padding:30px 28px 64px;">
+        <div style="background:linear-gradient(135deg,#1f2d2b,#2c423d); border-radius:20px; padding:34px; color:#eaf3f0; display:flex; align-items:center; gap:34px; margin-bottom:26px;">
+          <div style="position:relative; width:128px; height:128px; flex:none;">
+            <div style="position:absolute; inset:0; border-radius:50%; background:{{ scoreRing }};"></div>
+            <div style="position:absolute; inset:11px; border-radius:50%; background:#243532; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px;">{{ scorePct }}</div><div style="font-size:11px; color:#9fbab3; font-weight:700;">SCORE</div></div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px; color:#9fbab3; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px;">Quiz complete</div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; margin:0 0 8px;">Nicely done, Alex!</h1>
+            <p style="color:#bcd2cc; font-size:15px; margin:0 0 18px;">You scored {{ correctCount }} of {{ total }} on World Capitals Challenge.</p>
+            <div style="display:flex; gap:24px;">
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#56cc9d;">{{ correctCount }}</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Correct</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#ff9a7f;">{{ missed }}</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Missed</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;">{{ earned }}</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Points</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;">6:42</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Time</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; margin:0;">Answer review</h2>
+          <div style="display:flex; gap:10px;">
+            <button style="border:1px solid #dde7e3; background:#fff; color:#5b6b66; font-weight:700; font-size:13.5px; padding:10px 16px; border-radius:10px; cursor:pointer; font-family:'Lato',sans-serif;">⎙ Print</button>
+            <button onClick="{{ goBrowse }}" style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:13.5px; padding:10px 18px; border-radius:10px; cursor:pointer; font-family:'Lato',sans-serif;">More quizzes</button>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <sc-for list="{{ review }}" as="r" hint-placeholder-count="5">
+            <div style="background:#fff; border:1px solid #e7efeb; border-left:4px solid {{ r.bar }}; border-radius:12px; padding:16px 18px; display:flex; align-items:center; gap:16px;">
+              <div style="width:30px; height:30px; border-radius:8px; flex:none; background:{{ r.tint }}; color:{{ r.bar }}; display:flex; align-items:center; justify-content:center; font-weight:900;">{{ r.mark }}</div>
+              <div style="flex:1;"><div style="font-weight:700; font-size:15px; margin-bottom:3px;">{{ r.q }}</div><div style="font-size:13px; color:#859590;">Your answer: {{ r.ans }}</div></div>
+              <div style="font-size:13px; font-weight:700; color:{{ r.bar }};">{{ r.pts }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== CREATE ===================== -->
+    <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:1080px; margin:0 auto; padding:30px 28px 64px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+          <div><h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; margin:0 0 4px;">Create a quiz</h1><p style="color:#859590; font-size:14px; margin:0;">Draft · saved 2 min ago</p></div>
+          <div style="display:flex; gap:10px;"><button style="border:1px solid #dde7e3; background:#fff; color:#5b6b66; font-weight:700; font-size:14px; padding:11px 18px; border-radius:11px; cursor:pointer; font-family:'Lato',sans-serif;">Save draft</button><button style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:14px; padding:11px 20px; border-radius:11px; cursor:pointer; font-family:'Lato',sans-serif;">Publish</button></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:start;">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:16px; padding:24px;">
+              <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:8px;">Quiz title</label>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; border-bottom:2px solid #eef4f1; padding-bottom:12px; margin-bottom:20px; color:#1d2b28;">Renaissance Art &amp; Artists</div>
+              <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:8px;">Description</label>
+              <div style="border:1px solid #e7efeb; border-radius:12px; overflow:hidden;">
+                <div style="display:flex; gap:4px; padding:8px 10px; background:#f8fbfa; border-bottom:1px solid #eef4f1;"><sc-for list="{{ rteTools }}" as="t" hint-placeholder-count="6"><span style="width:28px; height:26px; border-radius:6px; background:#fff; border:1px solid #e7efeb; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#5b6b66;">{{ t }}</span></sc-for></div>
+                <div style="padding:14px 16px; font-size:14px; color:#5b6b66; line-height:1.6;">A visual tour through the masters of the Renaissance — <strong style="color:#1d2b28;">da Vinci</strong>, Michelangelo, Raphael — and the works that defined an era.</div>
+              </div>
+            </div>
+
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:16px; padding:20px 24px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;"><h3 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; margin:0;">Questions <span style="color:#aab8b3; font-weight:400;">· 3</span></h3><span style="font-size:12.5px; color:#859590; font-weight:700;">⤢ Drag to reorder</span></div>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <sc-for list="{{ builderQs }}" as="b" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; gap:14px; border:1px solid #e7efeb; border-radius:12px; padding:14px 16px; background:{{ b.bg }};">
+                    <span style="color:#cdded7; font-size:16px; cursor:grab;">⠿</span>
+                    <span style="width:26px; height:26px; border-radius:7px; background:#eef4f1; color:#5b6b66; font-weight:900; font-size:12px; display:flex; align-items:center; justify-content:center;">{{ b.n }}</span>
+                    <div style="flex:1;"><div style="font-weight:700; font-size:14.5px;">{{ b.q }}</div><div style="font-size:12.5px; color:#859590; margin-top:2px;">{{ b.meta }}</div></div>
+                    <span style="font-size:11.5px; font-weight:700; color:{{ b.tFg }}; background:{{ b.tBg }}; padding:5px 10px; border-radius:999px;">{{ b.type }}</span>
+                  </div>
+                </sc-for>
+                <button style="border:2px dashed #d6e4de; background:#fbfdfc; color:#3a8a72; font-weight:700; font-size:14px; padding:14px; border-radius:12px; cursor:pointer; font-family:'Lato',sans-serif;">+ Add question</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:16px; padding:20px;">
+              <label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:10px;">Cover image</label>
+              <div style="height:120px; border-radius:12px; border:1.5px dashed #d6e4de; background:repeating-linear-gradient(45deg,#f6faf8,#f6faf8 10px,#eef5f1 10px,#eef5f1 20px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:#9aaaa4;"><span style="font-size:24px;">↑</span><span style="font-family:'Space Grotesk',monospace; font-size:11.5px;">drop image · max 2MB</span></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:16px;">
+              <div><label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:8px;">Category</label><div style="border:1px solid #dde7e3; border-radius:10px; padding:11px 13px; font-size:14px; font-weight:700; color:#4a5b56; display:flex; justify-content:space-between;">General Knowledge <span style="color:#aab8b3;">▾</span></div></div>
+              <div><label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:8px;">Difficulty</label><div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;"><span style="text-align:center; font-size:13px; font-weight:700; padding:10px; border-radius:9px; background:#f4f8f6; color:#859590;">Easy</span><span style="text-align:center; font-size:13px; font-weight:700; padding:10px; border-radius:9px; background:#fbf2dd; color:#9c7212; border:2px solid #ecd9a3;">Medium</span><span style="text-align:center; font-size:13px; font-weight:700; padding:10px; border-radius:9px; background:#f4f8f6; color:#859590;">Hard</span></div></div>
+              <div><label style="display:block; font-size:13px; font-weight:700; color:#3a4b46; margin-bottom:8px;">Time limit (min)</label><div style="border:1px solid #dde7e3; border-radius:10px; padding:11px 13px; font-size:14px; font-weight:700; color:#4a5b56;">15</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== LOBBY ===================== -->
+    <sc-if value="{{ isLobby }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:980px; margin:0 auto; padding:30px 28px 64px;">
+        <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:24px; align-items:start;">
+          <div style="background:linear-gradient(150deg,#1f2d2b,#2c423d); border-radius:20px; padding:30px; color:#eaf3f0;">
+            <div style="font-size:12.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#9fbab3; margin-bottom:10px;">Join code</div>
+            <div style="display:flex; gap:9px; margin-bottom:22px;">
+              <sc-for list="{{ code }}" as="c" hint-placeholder-count="6">
+                <span style="width:46px; height:58px; border-radius:12px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px;">{{ c }}</span>
+              </sc-for>
+            </div>
+            <button style="width:100%; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:#eaf3f0; font-weight:700; font-size:13.5px; padding:11px; border-radius:11px; cursor:pointer; font-family:'Lato',sans-serif; margin-bottom:24px;">⧉ Copy invite link</button>
+            <div style="border-top:1px solid rgba(255,255,255,.1); padding-top:20px;">
+              <div style="font-weight:700; margin-bottom:4px;">World Capitals Challenge</div>
+              <div style="font-size:13px; color:#9fbab3;">15 questions · 10 min · Hosted by you</div>
+            </div>
+            <div style="display:flex; gap:14px; margin-top:18px;">
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px;">5 / 12</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Players</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#56cc9d;">Waiting</div><div style="font-size:12px; color:#9fbab3; font-weight:700;">Status</div></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;"><h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; margin:0;">Players in lobby</h2><span style="font-size:13px; color:#859590; font-weight:700;">5 joined</span></div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:22px;">
+              <sc-for list="{{ players }}" as="p" hint-placeholder-count="5">
+                <div style="display:flex; align-items:center; gap:13px; background:#fff; border:1px solid #e7efeb; border-radius:13px; padding:13px 16px;">
+                  <div style="width:38px; height:38px; border-radius:50%; background:{{ p.color }}; color:{{ p.ink }}; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px;">{{ p.initials }}</div>
+                  <div style="flex:1;"><div style="font-weight:700; font-size:14.5px;">{{ p.name }}</div><div style="font-size:12px; color:#859590;">{{ p.handle }}</div></div>
+                  <span style="font-size:11.5px; font-weight:700; color:{{ p.sFg }}; background:{{ p.sBg }}; padding:5px 11px; border-radius:999px;">{{ p.status }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex; align-items:center; gap:13px; border:1.5px dashed #d6e4de; border-radius:13px; padding:13px 16px; color:#9aaaa4;"><div style="width:38px; height:38px; border-radius:50%; background:#f4f8f6; display:flex; align-items:center; justify-content:center; font-size:18px;">+</div><div style="font-size:13.5px; font-weight:700;">Waiting for more players…</div></div>
+            </div>
+            <button onClick="{{ goGame }}" style="width:100%; border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:16px; padding:16px; border-radius:13px; cursor:pointer; font-family:'Lato',sans-serif; box-shadow:0 10px 22px rgba(120,194,173,.35);">Start game · 5 players</button>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== GAME ===================== -->
+    <sc-if value="{{ isGame }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:980px; margin:0 auto; padding:26px 28px 56px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:11px;"><span style="width:9px; height:9px; border-radius:50%; background:#ff7851; box-shadow:0 0 0 4px rgba(255,120,81,.18);"></span><span style="font-weight:700; font-size:14px;">Live · Question 7 / 15</span></div>
+          <div style="display:flex; align-items:center; gap:8px; background:#ffe9e2; color:#ff7851; font-weight:700; font-size:15px; padding:9px 15px; border-radius:11px;">◷ 0:18</div>
+        </div>
+        <div style="height:8px; background:#eef4f1; border-radius:99px; overflow:hidden; margin-bottom:24px;"><div style="height:100%; width:46%; background:var(--accent,#78c2ad); border-radius:99px;"></div></div>
+        <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; margin:0 0 22px;">Live leaderboard</h2>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+          <sc-for list="{{ leaderboard }}" as="l" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:16px; background:{{ l.cardBg }}; border:1px solid {{ l.cardBd }}; border-radius:14px; padding:15px 18px;">
+              <div style="width:34px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:{{ l.rankFg }}; text-align:center;">{{ l.rank }}</div>
+              <div style="width:40px; height:40px; border-radius:50%; background:{{ l.color }}; color:{{ l.ink }}; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; flex:none;">{{ l.initials }}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;"><span style="font-weight:700; font-size:15px;">{{ l.name }}</span>{{ l.youTag }}</div>
+                <div style="height:7px; background:#eef4f1; border-radius:99px; overflow:hidden;"><div style="height:100%; width:{{ l.pct }}; background:{{ l.barColor }}; border-radius:99px;"></div></div>
+              </div>
+              <div style="text-align:right; flex:none;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px;">{{ l.score }}</div><div style="font-size:11.5px; color:#859590; font-weight:700;">{{ l.answered }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ===================== ADMIN ===================== -->
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:1160px; margin:0 auto; padding:30px 28px 64px;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; margin:0 0 4px;">User management</h1>
+        <p style="color:#859590; font-size:14px; margin:0 0 22px;">Admin dashboard · manage accounts, roles, and activity</p>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+          <sc-for list="{{ adminStats }}" as="s" hint-placeholder-count="4">
+            <div style="background:#fff; border:1px solid #e7efeb; border-radius:14px; padding:18px 20px;"><div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;"><span style="width:30px; height:30px; border-radius:9px; background:{{ s.tint }}; color:{{ s.ink }}; display:flex; align-items:center; justify-content:center; font-weight:700;">{{ s.icon }}</span><span style="font-size:12.5px; color:#859590; font-weight:700;">{{ s.label }}</span></div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px;">{{ s.value }}</div></div>
+          </sc-for>
+        </div>
+        <div style="background:#fff; border:1px solid #e7efeb; border-radius:16px; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid #eef4f1;">
+            <div style="flex:1; display:flex; align-items:center; gap:9px; background:#f4f8f6; border-radius:10px; padding:10px 13px; color:#9aaaa4; font-size:13.5px;"><span>⌕</span> Search by name, username or email…</div>
+            <div style="display:flex; align-items:center; gap:7px; border:1px solid #e2ece8; border-radius:10px; padding:10px 13px; font-size:13px; font-weight:700; color:#4a5b56;">All roles <span style="color:#aab8b3;">▾</span></div>
+            <button style="border:none; background:var(--accent,#78c2ad); color:#fff; font-weight:700; font-size:13.5px; padding:10px 16px; border-radius:10px; cursor:pointer; font-family:'Lato',sans-serif;">+ Add user</button>
+          </div>
+          <div style="display:grid; grid-template-columns:2.4fr 1fr 1fr 1fr 80px; padding:12px 20px; background:#fafcfb; font-size:11.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#9aaaa4; border-bottom:1px solid #eef4f1;">
+            <span>User</span><span>Role</span><span>Quizzes</span><span>Attempts</span><span></span>
+          </div>
+          <sc-for list="{{ users }}" as="u" hint-placeholder-count="6">
+            <div style="display:grid; grid-template-columns:2.4fr 1fr 1fr 1fr 80px; align-items:center; padding:14px 20px; border-bottom:1px solid #f3f7f5;">
+              <div style="display:flex; align-items:center; gap:12px;"><div style="width:38px; height:38px; border-radius:50%; background:{{ u.color }}; color:{{ u.ink }}; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px;">{{ u.initials }}</div><div><div style="font-weight:700; font-size:14px;">{{ u.name }}</div><div style="font-size:12.5px; color:#859590;">{{ u.email }}</div></div></div>
+              <span><span style="font-size:11.5px; font-weight:700; color:{{ u.rFg }}; background:{{ u.rBg }}; padding:5px 11px; border-radius:999px;">{{ u.role }}</span></span>
+              <span style="font-weight:700; font-size:14px; color:#3a4b46;">{{ u.quizzes }}</span>
+              <span style="font-weight:700; font-size:14px; color:#3a4b46;">{{ u.attempts }}</span>
+              <span style="color:#aab8b3; font-weight:700; letter-spacing:2px;">⋯</span>
+            </div>
+          </sc-for>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px;">
+            <span style="font-size:13px; color:#859590;">Showing 1–6 of 412 users</span>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ pages }}" as="pg" hint-placeholder-count="5">
+                <span style="min-width:32px; height:32px; padding:0 8px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; background:{{ pg.bg }}; color:{{ pg.fg }}; border:1px solid {{ pg.bd }};">{{ pg.n }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!--SCREENS-END-->
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#78c2ad&quot;,&quot;options&quot;:[&quot;#78c2ad&quot;,&quot;#56cc9d&quot;,&quot;#5b9fd6&quot;,&quot;#b07cc6&quot;,&quot;#e0a458&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;accent2&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#f3969a&quot;,&quot;options&quot;:[&quot;#f3969a&quot;,&quot;#ff7851&quot;,&quot;#f5b740&quot;,&quot;#86d0b8&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;cardRadius&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:16,&quot;min&quot;:4,&quot;max&quot;:24,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'home', timeLeft: 214, qIndex: 0, answers: {}, diff: null, category: null, status: null, search: '', openMenu: null };
+  componentDidMount(){
+    this._t = setInterval(()=>{
+      if(this.state.screen==='take' && this.state.timeLeft>0) this.setState(s=>({timeLeft:s.timeLeft-1}));
+    },1000);
+  }
+  componentWillUnmount(){ clearInterval(this._t); }
+  go(id){ return ()=>{ this.setState({screen:id}); const m=document.querySelector('main'); if(m) m.scrollTop=0; }; }
+  fmt(s){ const m=Math.floor(s/60), ss=s%60; return m+':'+(ss<10?'0':'')+ss; }
+  renderVals(){
+    const screen=this.state.screen;
+    const groups=[
+      {label:'Public', items:[['home','Home'],['login','Sign in'],['register','Create account']]},
+      {label:'Quizzes', items:[['browse','Browse quizzes'],['detail','Quiz detail'],['take','Take quiz'],['results','Results'],['create','Create quiz']]},
+      {label:'Multiplayer', items:[['lobby','Lobby'],['game','Live game']]},
+      {label:'Admin', items:[['admin','User dashboard']]},
+    ].map(g=>({label:g.label, items:g.items.map(([id,name])=>{
+      const active=id===screen;
+      return {id,name,active,select:this.go(id),
+        bg: active?'#e8f4ef':'transparent', fg: active?'#2f6b5c':'#56655f',
+        dot: active?'var(--accent,#78c2ad)':'#cdded7'};
+    })}));
+    const appScreens=['browse','detail','take','results','create','lobby','game','admin'];
+
+    const tl=this.state.timeLeft;
+    const danger = tl<60, warn = tl<300 && tl>=60;
+    const tcolor = danger?'#ff7851':warn?'#cf9526':'#3aa17e';
+    const tbg = danger?'#ffe9e2':warn?'#fbf2dd':'#e7f5ee';
+
+    const cover=(a,b)=>`linear-gradient(135deg, ${a}, ${b})`;
+    const quizzes=[
+      {title:'World Capitals Challenge', cat:'Geography', catFg:'#3aa17e', icon:'🌍', diff:'Medium', diffFg:'#cf9526', dur:'10 min', qs:15, author:'R. Tan', cover:cover('#9fe0cc','#78c2ad')},
+      {title:'JavaScript Fundamentals', cat:'Computer Science', catFg:'#5b7fd6', icon:'⚡', diff:'Hard', diffFg:'#ff7851', dur:'20 min', qs:25, author:'D. Cole', cover:cover('#a9c2f2','#7f9fe0')},
+      {title:'The Human Body', cat:'Science', catFg:'#3aa17e', icon:'🫀', diff:'Easy', diffFg:'#3aa17e', dur:'8 min', qs:12, author:'M. Ito', cover:cover('#f7b6b9','#f3969a')},
+      {title:'Ancient Civilizations', cat:'History', catFg:'#b07cc6', icon:'🏛️', diff:'Medium', diffFg:'#cf9526', dur:'15 min', qs:18, author:'L. Park', cover:cover('#e0c3a9','#cda37f')},
+      {title:'World Cup Trivia', cat:'Sports', catFg:'#ff7851', icon:'⚽', diff:'Easy', diffFg:'#3aa17e', dur:'6 min', qs:10, author:'J. Diaz', cover:cover('#ffd0a9','#ffae7f')},
+      {title:'Famous Paintings', cat:'General Knowledge', catFg:'#5b7fd6', icon:'🎨', diff:'Hard', diffFg:'#ff7851', dur:'12 min', qs:20, author:'S. Vogel', cover:cover('#c3b6f7','#a596e0')},
+    ];
+    const features=[
+      {icon:'✎', tint:'#e8f4ef', ink:'#2f6b5c', title:'Build it your way', body:'Multiple choice, true/false, and short answer — with rich text, images, and points per question.'},
+      {icon:'⚡', tint:'#fdeef0', ink:'#c5566a', title:'Play live, together', body:'Spin up a lobby, share a 6-character code, and watch the leaderboard update in real time.'},
+      {icon:'◷', tint:'#fff0e8', ink:'#cf6a3f', title:'Beat the clock', body:'Countdown timers, auto-submit, instant feedback, and a printable results breakdown.'},
+    ];
+
+    // ---- live quiz flow ----
+    const questions=[
+      {q:'Which river flows through the Egyptian capital, Cairo?', type:'Multiple choice', pts:10, options:['The Tigris','The Euphrates','The Nile','The Congo'], correct:2},
+      {q:'What is the capital of Australia?', type:'Multiple choice', pts:10, options:['Sydney','Canberra','Melbourne','Perth'], correct:1},
+      {q:'Mount Everest sits on the border of Nepal and which country?', type:'Multiple choice', pts:10, options:['India','China','Bhutan','Pakistan'], correct:1},
+      {q:'By total area, what is the largest desert on Earth?', type:'Multiple choice', pts:10, options:['The Sahara','The Gobi','The Antarctic','The Arabian'], correct:2},
+      {q:'The Amazon River carries more water than any other. Most of it lies in which country?', type:'Multiple choice', pts:10, options:['Brazil','Peru','Colombia','Venezuela'], correct:0},
+    ];
+    const total=questions.length;
+    const answers=this.state.answers||{};
+    const qi=Math.min(this.state.qIndex||0, total-1);
+    const cq=questions[qi];
+    const optKeys=['A','B','C','D'];
+    const takeOptions=cq.options.map((label,i)=>{
+      const sel=answers[qi]===i;
+      return {label, key:optKeys[i],
+        pick:(()=>()=>{ const a={...(this.state.answers||{})}; a[qi]=i; this.setState({answers:a}); })(),
+        bg: sel?'#eef8f4':'#fff', border: sel?'2px solid var(--accent,#78c2ad)':'1px solid #e7efeb',
+        fg: sel?'#2f6b5c':'#3a4b46', keyBg: sel?'var(--accent,#78c2ad)':'#f1f5f3', keyFg: sel?'#fff':'#859590',
+        check: sel?'●':''};
+    });
+    const qdots=questions.map((_,i)=>{
+      const ans=answers[i]!=null, cur=i===qi;
+      return {n:i+1, jump:(()=>()=>this.setState({qIndex:i}))(),
+        bg: cur?'var(--accent,#78c2ad)':ans?'#d6efe5':'#f1f5f3', fg: cur?'#fff':ans?'#2f8a64':'#aab8b3'};
+    });
+    const isLast=qi===total-1;
+    const nextQuiz=()=>{ if(isLast){ this.go('results')(); } else { this.setState({qIndex:qi+1}); } };
+    const prevQuiz=()=>{ if(qi>0) this.setState({qIndex:qi-1}); };
+    const skipQuiz=()=>{ if(!isLast) this.setState({qIndex:qi+1}); else this.go('results')(); };
+    const progressPct=Math.round(((qi+1)/total)*100)+'%';
+
+    // ---- results from answers ----
+    let correctCount=0, earned=0, totalPts=0;
+    questions.forEach((q,i)=>{ totalPts+=q.pts; if(answers[i]===q.correct){ correctCount++; earned+=q.pts; } });
+    const scorePct=Math.round((correctCount/total)*100);
+    const scoreRing='conic-gradient(var(--accent,#78c2ad) 0% '+scorePct+'%, rgba(255,255,255,.14) '+scorePct+'% 100%)';
+    const review=questions.map((q,i)=>{
+      const ok=answers[i]===q.correct;
+      const ansText=answers[i]!=null? q.options[answers[i]] : 'No answer';
+      return {q:q.q, ans:ansText, mark: ok?'✓':'✕', bar: ok?'#3aa17e':'#ff7851', tint: ok?'#e7f5ee':'#ffe9e2', pts: ok?'+'+q.pts:'+0'};
+    });
+
+    // ---- browse filters: search + category + status + difficulty ----
+    const diff=this.state.diff||null;
+    const cat=this.state.category||null;
+    const stat=this.state.status||null;
+    const search=(this.state.search||'').trim().toLowerCase();
+    const openMenu=this.state.openMenu||null;
+    const statusBy=['Popular','Popular','New','New','Completed','Popular'];
+    quizzes.forEach((q,i)=>{ q.status=statusBy[i%statusBy.length]; });
+
+    const diffDefs=[['Easy','#e7f5ee','#2f8a64','#cfeede'],['Medium','#fbf2dd','#9c7212','#f1e2b8'],['Hard','#ffe9e2','#c5512a','#ffd6c7']];
+    const diffChips=diffDefs.map(([label,bg,fg,bd])=>{
+      const active=diff===label;
+      return {label, toggle:(()=>()=>this.setState({diff: this.state.diff===label?null:label}))(),
+        bg: active?fg:bg, fg: active?'#fff':fg, bd: active?fg:bd};
+    });
+
+    const mkOptions=(list,cur,key)=>[{label:'All',value:null}].concat(list.map(l=>({label:l,value:l}))).map(o=>{
+      const active=(cur||null)===o.value;
+      return {label:o.label, select:(()=>()=>this.setState({[key]:o.value, openMenu:null}))(),
+        bg: active?'#e8f4ef':'transparent', fg: active?'#2f6b5c':'#4a5b56'};
+    });
+    const categoryOptions=mkOptions(['Geography','Computer Science','Science','History','Sports','General Knowledge'],cat,'category');
+    const statusOptions=mkOptions(['New','Popular','Completed'],stat,'status');
+    const toggleMenu=(name)=>()=>this.setState({openMenu:this.state.openMenu===name?null:name});
+
+    const shownQuizzes=quizzes.filter(q=>
+      (!diff||q.diff===diff) && (!cat||q.cat===cat) && (!stat||q.status===stat) &&
+      (!search||q.title.toLowerCase().includes(search)||q.cat.toLowerCase().includes(search))
+    );
+    const hasFilters=!!(diff||cat||stat||search);
+    const quizCountVal = hasFilters? String(shownQuizzes.length) : '126';
+    const detailFacts=[{v:'15',k:'Questions'},{v:'150',k:'Total points'},{v:'1.2k',k:'Plays'}];
+
+    const builderQs=[
+      {n:1, q:'Who painted the Mona Lisa?', meta:'4 options · 10 pts', type:'Multiple choice', tFg:'#2f6b5c', tBg:'#e8f4ef', bg:'#fff'},
+      {n:2, q:'The Sistine Chapel ceiling was painted by Raphael.', meta:'True / False · 5 pts', type:'True/False', tFg:'#9c7212', tBg:'#fbf2dd', bg:'#fff'},
+      {n:3, q:'Name the city where the Renaissance began.', meta:'Short answer · 15 pts', type:'Short answer', tFg:'#c5566a', tBg:'#fdeef0', bg:'#fbfdfc'},
+    ];
+    const rteTools=['B','I','U','“”','•','🔗'];
+
+    const players=[
+      {name:'You', handle:'@alexm', initials:'AM', color:'var(--accent,#78c2ad)', ink:'#13241f', status:'Host', sFg:'#2f6b5c', sBg:'#e8f4ef'},
+      {name:'Priya Nair', handle:'@priya', initials:'PN', color:'#f3969a', ink:'#5a1f24', status:'Ready', sFg:'#2f8a64', sBg:'#e7f5ee'},
+      {name:'Diego Cole', handle:'@dcole', initials:'DC', color:'#7f9fe0', ink:'#1c2c52', status:'Ready', sFg:'#2f8a64', sBg:'#e7f5ee'},
+      {name:'Mei Ito', handle:'@meiito', initials:'MI', color:'#ffae7f', ink:'#5a2c14', status:'Ready', sFg:'#2f8a64', sBg:'#e7f5ee'},
+      {name:'Sam Vogel', handle:'@svogel', initials:'SV', color:'#a596e0', ink:'#2c2152', status:'Joining…', sFg:'#9c7212', sBg:'#fbf2dd'},
+    ];
+
+    const lbRaw=[
+      {name:'Priya Nair', initials:'PN', color:'#f3969a', ink:'#5a1f24', score:680, pct:'92%', answered:'7 / 7', you:false},
+      {name:'You', initials:'AM', color:'var(--accent,#78c2ad)', ink:'#13241f', score:640, pct:'86%', answered:'7 / 7', you:true},
+      {name:'Diego Cole', initials:'DC', color:'#7f9fe0', ink:'#1c2c52', score:590, pct:'79%', answered:'6 / 7', you:false},
+      {name:'Mei Ito', initials:'MI', color:'#ffae7f', ink:'#5a2c14', score:520, pct:'70%', answered:'6 / 7', you:false},
+      {name:'Sam Vogel', initials:'SV', color:'#a596e0', ink:'#2c2152', score:410, pct:'55%', answered:'5 / 7', you:false},
+    ];
+    const medals=['#f5b740','#b8c2c9','#cd8b53'];
+    const leaderboard=lbRaw.map((p,i)=>({
+      ...p, rank:i+1, rankFg: i<3?medals[i]:'#aab8b3',
+      cardBg: p.you?'#eef8f4':'#fff', cardBd: p.you?'var(--accent,#78c2ad)':'#e7efeb',
+      barColor: p.you?'var(--accent,#78c2ad)':'#bcd2c9',
+      youTag: p.you?React.createElement('span',{style:{fontSize:'11px',fontWeight:700,color:'#2f6b5c',background:'#d6efe5',padding:'2px 8px',borderRadius:'999px'}},'You'):'',
+    }));
+
+    const adminStats=[
+      {label:'Total users', value:'412', icon:'◍', tint:'#e8f4ef', ink:'#2f6b5c'},
+      {label:'Teachers', value:'38', icon:'✎', tint:'#fdeef0', ink:'#c5566a'},
+      {label:'Quizzes', value:'126', icon:'❓', tint:'#eef2fd', ink:'#5b7fd6'},
+      {label:'Attempts (7d)', value:'2.1k', icon:'↻', tint:'#fff0e8', ink:'#cf6a3f'},
+    ];
+    const roleStyle={Student:{rFg:'#2f6b5c',rBg:'#e8f4ef'},Teacher:{rFg:'#c5566a',rBg:'#fdeef0'},Admin:{rFg:'#5b7fd6',rBg:'#eef2fd'}};
+    const usersRaw=[
+      {name:'Alex Morgan', email:'alex@example.com', initials:'AM', color:'var(--accent,#78c2ad)', ink:'#13241f', role:'Admin', quizzes:12, attempts:48},
+      {name:'Rosa Tan', email:'rosa.tan@lincoln.edu', initials:'RT', color:'#f3969a', ink:'#5a1f24', role:'Teacher', quizzes:24, attempts:6},
+      {name:'Diego Cole', email:'dcole@example.com', initials:'DC', color:'#7f9fe0', ink:'#1c2c52', role:'Teacher', quizzes:9, attempts:14},
+      {name:'Mei Ito', email:'mei.ito@example.com', initials:'MI', color:'#ffae7f', ink:'#5a2c14', role:'Student', quizzes:0, attempts:132},
+      {name:'Sam Vogel', email:'svogel@example.com', initials:'SV', color:'#a596e0', ink:'#2c2152', role:'Student', quizzes:0, attempts:87},
+      {name:'Priya Nair', email:'priya.n@example.com', initials:'PN', color:'#86d0b8', ink:'#13241f', role:'Student', quizzes:0, attempts:201},
+    ];
+    const users=usersRaw.map(u=>({...u, ...roleStyle[u.role]}));
+    const pages=['‹',1,2,3,'›'].map((n,i)=>{
+      const active=n===1;
+      return {n, bg: active?'var(--accent,#78c2ad)':'#fff', fg: active?'#fff':'#5b6b66', bd: active?'var(--accent,#78c2ad)':'#e2ece8'};
+    });
+
+    return {
+      groups, isApp: appScreens.includes(screen),
+      takeOptions, qdots, review, detailFacts, builderQs, rteTools,
+      players, leaderboard, adminStats, users, pages,
+      code:['7','K','9','M','2','X'],
+      goLobby:this.go('lobby'),
+      isHome: screen==='home', isLogin: screen==='login', isRegister: screen==='register',
+      isBrowse: screen==='browse', isDetail: screen==='detail', isTake: screen==='take',
+      isResults: screen==='results', isCreate: screen==='create', isLobby: screen==='lobby',
+      isGame: screen==='game', isAdmin: screen==='admin',
+      goLogin:this.go('login'), goRegister:this.go('register'), goBrowse:this.go('browse'),
+      goAdmin:this.go('admin'), goCreate:this.go('create'), goDetail:this.go('detail'),
+      goTake:this.go('take'), goResults:this.go('results'), goGame:this.go('game'),
+      quizzes: shownQuizzes, features, quizCount: quizCountVal, diffChips,
+      categoryOptions, statusOptions,
+      catOpen: openMenu==='category', statusOpen: openMenu==='status',
+      toggleCat: toggleMenu('category'), toggleStatus: toggleMenu('status'),
+      categoryLabel: cat||'Category', statusLabel: stat||'Status',
+      searchVal: this.state.search||'', onSearch:(e)=>this.setState({search:e.target.value}),
+      hasFilters, clearFilters:()=>this.setState({diff:null,category:null,status:null,search:'',openMenu:null}),
+      // take quiz
+      tText:this.fmt(tl), tColor:tcolor, tBg:tbg,
+      qNum:qi+1, total, cqText:cq.q, cqType:cq.type, cqPts:'+'+cq.pts+' points',
+      progressPct, nextQuiz, prevQuiz, skipQuiz, nextLabel: isLast?'Submit ✓':'Next →',
+      // results
+      scorePct: scorePct+'%', scoreRing, correctCount, missed: total-correctCount, earned,
+      accent:this.props.accent ?? '#78c2ad',
+      accent2:this.props.accent2 ?? '#f3969a',
+      radiusPx:(this.props.cardRadius ?? 16)+'px',
+    };
+  }
+}
+</script>
+</body>
+</html>
