@@ -12,7 +12,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->user_type === 'admin';
+        return $this->user() && in_array($this->user()->user_type, ['admin', 'super_admin']);
     }
 
     /**
@@ -27,7 +27,7 @@ class StoreUserRequest extends FormRequest
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'user_type' => ['required', Rule::in(['admin', 'teacher', 'student'])],
+            'user_type' => ['required', Rule::in(['super_admin', 'admin', 'teacher', 'student'])],
         ];
     }
 }

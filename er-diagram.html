@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizApp - ER Dijagram</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1f2d2b;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .diagram-container {
+            width: 100%;
+            overflow: auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+        .table-box {
+            cursor: default;
+        }
+        .table-header {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .table-col {
+            font-size: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+        .pk { fill: #e8a838; }
+        .fk { fill: #5b7fd6; }
+        .col-type { fill: #888; font-size: 11px; }
+        .legend {
+            margin-top: 24px;
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+        @media print {
+            body { background: #fff; padding: 10px; }
+            .diagram-container { box-shadow: none; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>QuizApp - ER Dijagram baze podataka</h1>
+    <p class="subtitle">Entity-Relationship dijagram svih tablica i njihovih relacija | Autorica: Martina Crnogorac | FPMOZ</p>
+
+    <div class="diagram-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1100" width="1500" height="1100">
+            <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" fill="#999"/>
+                </marker>
+                <marker id="diamond" markerWidth="12" markerHeight="8" refX="0" refY="4" orient="auto">
+                    <polygon points="6 0, 12 4, 6 8, 0 4" fill="#999"/>
+                </marker>
+                <filter id="shadow">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+                </filter>
+            </defs>
+
+            <!-- RELATIONSHIPS (lines behind tables) -->
+
+            <!-- users -> quizzes (1:N) -->
+            <line x1="250" y1="280" x2="480" y2="200" stroke="#78c2ad" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="350" y="225" fill="#78c2ad" font-size="11" font-weight="700">1:N</text>
+
+            <!-- users -> quiz_attempts (1:N) -->
+            <line x1="250" y1="320" x2="480" y2="520" stroke="#78c2ad" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="340" y="430" fill="#78c2ad" font-size="11" font-weight="700">1:N</text>
+
+            <!-- quizzes -> questions (1:N) -->
+            <line x1="720" y1="200" x2="920" y2="170" stroke="#5b7fd6" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="810" y="172" fill="#5b7fd6" font-size="11" font-weight="700">1:N</text>
+
+            <!-- questions -> options (1:N) -->
+            <line x1="1100" y1="200" x2="1250" y2="140" stroke="#5b7fd6" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="1175" y="155" fill="#5b7fd6" font-size="11" font-weight="700">1:N</text>
+
+            <!-- quizzes -> quiz_attempts (1:N) -->
+            <line x1="600" y1="290" x2="600" y2="460" stroke="#f3969a" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="610" y="380" fill="#f3969a" font-size="11" font-weight="700">1:N</text>
+
+            <!-- quiz_attempts -> user_answers (1:N) -->
+            <line x1="720" y1="560" x2="920" y2="520" stroke="#f3969a" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="810" y="525" fill="#f3969a" font-size="11" font-weight="700">1:N</text>
+
+            <!-- questions -> user_answers (1:N) -->
+            <line x1="1000" y1="280" x2="1000" y2="440" stroke="#5b7fd6" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="1010" y="360" fill="#5b7fd6" font-size="11" font-weight="700">1:N</text>
+
+            <!-- options -> user_answers (N:1) -->
+            <line x1="1300" y1="250" x2="1150" y2="460" stroke="#5b7fd6" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+
+            <!-- users -> lobbies (1:N) -->
+            <line x1="200" y1="400" x2="200" y2="660" stroke="#e8a838" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="210" y="540" fill="#e8a838" font-size="11" font-weight="700">1:N</text>
+
+            <!-- quizzes -> lobbies -->
+            <line x1="600" y1="290" x2="350" y2="680" stroke="#e8a838" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+
+            <!-- lobbies -> game_sessions (1:N) -->
+            <line x1="400" y1="750" x2="580" y2="750" stroke="#e8a838" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="480" y="740" fill="#e8a838" font-size="11" font-weight="700">1:N</text>
+
+            <!-- users -> user_role (1:N) -->
+            <line x1="130" y1="400" x2="130" y2="880" stroke="#8b2f9e" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="85" y="640" fill="#8b2f9e" font-size="11" font-weight="700">1:N</text>
+
+            <!-- roles -> user_role (1:N) -->
+            <line x1="530" y1="920" x2="300" y2="940" stroke="#8b2f9e" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="400" y="920" fill="#8b2f9e" font-size="11" font-weight="700">1:N</text>
+
+            <!-- roles -> role_permission (1:N) -->
+            <line x1="720" y1="920" x2="900" y2="920" stroke="#8b2f9e" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="800" y="910" fill="#8b2f9e" font-size="11" font-weight="700">1:N</text>
+
+            <!-- permissions -> role_permission (1:N) -->
+            <line x1="1150" y1="860" x2="1060" y2="880" stroke="#8b2f9e" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+            <text x="1100" y="855" fill="#8b2f9e" font-size="11" font-weight="700">1:N</text>
+
+
+            <!-- ==================== TABLES ==================== -->
+
+            <!-- USERS TABLE -->
+            <g class="table-box" transform="translate(30, 180)">
+                <rect width="240" height="230" rx="10" fill="#fff" stroke="#78c2ad" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#78c2ad"/>
+                <rect x="0" y="24" width="240" height="10" fill="#78c2ad"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">users</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col">name <tspan class="col-type">VARCHAR(255)</tspan></text>
+                <text x="14" y="96" class="table-col">username <tspan class="col-type">VARCHAR(255) UNIQUE</tspan></text>
+                <text x="14" y="116" class="table-col">email <tspan class="col-type">VARCHAR(255) UNIQUE</tspan></text>
+                <text x="14" y="136" class="table-col">password <tspan class="col-type">VARCHAR(255)</tspan></text>
+                <text x="14" y="156" class="table-col">user_type <tspan class="col-type">ENUM</tspan></text>
+                <text x="14" y="176" class="table-col">email_verified_at <tspan class="col-type">TIMESTAMP</tspan></text>
+                <text x="14" y="196" class="table-col">remember_token <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="216" class="table-col">created_at, updated_at <tspan class="col-type">TIMESTAMP</tspan></text>
+            </g>
+
+            <!-- QUIZZES TABLE -->
+            <g class="table-box" transform="translate(480, 80)">
+                <rect width="240" height="210" rx="10" fill="#fff" stroke="#5b7fd6" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#5b7fd6"/>
+                <rect x="0" y="24" width="240" height="10" fill="#5b7fd6"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">quizzes</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col">title <tspan class="col-type">VARCHAR(255)</tspan></text>
+                <text x="14" y="96" class="table-col">description <tspan class="col-type">TEXT</tspan></text>
+                <text x="14" y="116" class="table-col">duration <tspan class="col-type">INT (min)</tspan></text>
+                <text x="14" y="136" class="table-col">image <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="156" class="table-col">category, difficulty <tspan class="col-type">VARCHAR/ENUM</tspan></text>
+                <text x="14" y="176" class="table-col">is_active <tspan class="col-type">BOOLEAN</tspan></text>
+                <text x="14" y="196" class="table-col"><tspan class="fk">FK</tspan> created_by <tspan class="col-type">-> users.id</tspan></text>
+            </g>
+
+            <!-- QUESTIONS TABLE -->
+            <g class="table-box" transform="translate(850, 80)">
+                <rect width="220" height="190" rx="10" fill="#fff" stroke="#5b7fd6" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="220" height="34" rx="10" fill="#5b7fd6"/>
+                <rect x="0" y="24" width="220" height="10" fill="#5b7fd6"/>
+                <text x="110" y="23" text-anchor="middle" fill="#fff" class="table-header">questions</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> quiz_id <tspan class="col-type">-> quizzes.id</tspan></text>
+                <text x="14" y="96" class="table-col">text <tspan class="col-type">TEXT</tspan></text>
+                <text x="14" y="116" class="table-col">type <tspan class="col-type">ENUM</tspan></text>
+                <text x="14" y="136" class="table-col">points <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="156" class="table-col">order <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="176" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- OPTIONS TABLE -->
+            <g class="table-box" transform="translate(1200, 40)">
+                <rect width="220" height="170" rx="10" fill="#fff" stroke="#5b7fd6" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="220" height="34" rx="10" fill="#5b7fd6"/>
+                <rect x="0" y="24" width="220" height="10" fill="#5b7fd6"/>
+                <text x="110" y="23" text-anchor="middle" fill="#fff" class="table-header">options</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> question_id <tspan class="col-type">-> questions.id</tspan></text>
+                <text x="14" y="96" class="table-col">text <tspan class="col-type">VARCHAR(255)</tspan></text>
+                <text x="14" y="116" class="table-col">is_correct <tspan class="col-type">BOOLEAN</tspan></text>
+                <text x="14" y="136" class="table-col">order <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="156" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- QUIZ_ATTEMPTS TABLE -->
+            <g class="table-box" transform="translate(480, 460)">
+                <rect width="240" height="210" rx="10" fill="#fff" stroke="#f3969a" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#f3969a"/>
+                <rect x="0" y="24" width="240" height="10" fill="#f3969a"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">quiz_attempts</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> user_id <tspan class="col-type">-> users.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> quiz_id <tspan class="col-type">-> quizzes.id</tspan></text>
+                <text x="14" y="116" class="table-col">score <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="136" class="table-col">total_points <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="156" class="table-col">percentage <tspan class="col-type">DECIMAL</tspan></text>
+                <text x="14" y="176" class="table-col">started_at, completed_at <tspan class="col-type">TS</tspan></text>
+                <text x="14" y="196" class="table-col">status <tspan class="col-type">ENUM</tspan></text>
+            </g>
+
+            <!-- USER_ANSWERS TABLE -->
+            <g class="table-box" transform="translate(870, 440)">
+                <rect width="240" height="190" rx="10" fill="#fff" stroke="#f3969a" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#f3969a"/>
+                <rect x="0" y="24" width="240" height="10" fill="#f3969a"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">user_answers</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> attempt_id <tspan class="col-type">-> quiz_attempts.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> question_id <tspan class="col-type">-> questions.id</tspan></text>
+                <text x="14" y="116" class="table-col"><tspan class="fk">FK</tspan> option_id <tspan class="col-type">-> options.id</tspan></text>
+                <text x="14" y="136" class="table-col">answer_text <tspan class="col-type">TEXT</tspan></text>
+                <text x="14" y="156" class="table-col">is_correct <tspan class="col-type">BOOLEAN</tspan></text>
+                <text x="14" y="176" class="table-col">points_earned <tspan class="col-type">INT</tspan></text>
+            </g>
+
+            <!-- LOBBIES TABLE -->
+            <g class="table-box" transform="translate(80, 660)">
+                <rect width="240" height="210" rx="10" fill="#fff" stroke="#e8a838" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#e8a838"/>
+                <rect x="0" y="24" width="240" height="10" fill="#e8a838"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">lobbies</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> quiz_id <tspan class="col-type">-> quizzes.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> host_id <tspan class="col-type">-> users.id</tspan></text>
+                <text x="14" y="116" class="table-col">code <tspan class="col-type">VARCHAR(6) UNIQUE</tspan></text>
+                <text x="14" y="136" class="table-col">status <tspan class="col-type">ENUM</tspan></text>
+                <text x="14" y="156" class="table-col">max_players <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="176" class="table-col">current_players <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="196" class="table-col">settings <tspan class="col-type">JSON</tspan></text>
+            </g>
+
+            <!-- GAME_SESSIONS TABLE -->
+            <g class="table-box" transform="translate(480, 680)">
+                <rect width="240" height="210" rx="10" fill="#fff" stroke="#e8a838" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#e8a838"/>
+                <rect x="0" y="24" width="240" height="10" fill="#e8a838"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">game_sessions</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> lobby_id <tspan class="col-type">-> lobbies.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> user_id <tspan class="col-type">-> users.id</tspan></text>
+                <text x="14" y="116" class="table-col"><tspan class="fk">FK</tspan> quiz_id <tspan class="col-type">-> quizzes.id</tspan></text>
+                <text x="14" y="136" class="table-col">score, total_points <tspan class="col-type">INT</tspan></text>
+                <text x="14" y="156" class="table-col">percentage <tspan class="col-type">DECIMAL</tspan></text>
+                <text x="14" y="176" class="table-col">answers <tspan class="col-type">JSON</tspan></text>
+                <text x="14" y="196" class="table-col">status <tspan class="col-type">ENUM</tspan></text>
+            </g>
+
+            <!-- ==================== ROLE & PERMISSION TABLES ==================== -->
+
+            <!-- ROLES TABLE -->
+            <g class="table-box" transform="translate(530, 830)">
+                <rect width="200" height="130" rx="10" fill="#fff" stroke="#8b2f9e" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="200" height="34" rx="10" fill="#8b2f9e"/>
+                <rect x="0" y="24" width="200" height="10" fill="#8b2f9e"/>
+                <text x="100" y="23" text-anchor="middle" fill="#fff" class="table-header">roles</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col">name <tspan class="col-type">VARCHAR UNIQUE</tspan></text>
+                <text x="14" y="96" class="table-col">description <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="116" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- USER_ROLE TABLE (pivot) -->
+            <g class="table-box" transform="translate(80, 910)">
+                <rect width="220" height="130" rx="10" fill="#fff" stroke="#8b2f9e" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="220" height="34" rx="10" fill="#8b2f9e"/>
+                <rect x="0" y="24" width="220" height="10" fill="#8b2f9e"/>
+                <text x="110" y="23" text-anchor="middle" fill="#fff" class="table-header">user_role</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> user_id <tspan class="col-type">-> users.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> role_id <tspan class="col-type">-> roles.id</tspan></text>
+                <text x="14" y="116" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- ROLE_PERMISSION TABLE (pivot) -->
+            <g class="table-box" transform="translate(900, 840)">
+                <rect width="240" height="130" rx="10" fill="#fff" stroke="#8b2f9e" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#8b2f9e"/>
+                <rect x="0" y="24" width="240" height="10" fill="#8b2f9e"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">role_permission</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col"><tspan class="fk">FK</tspan> role_id <tspan class="col-type">-> roles.id</tspan></text>
+                <text x="14" y="96" class="table-col"><tspan class="fk">FK</tspan> permission_id <tspan class="col-type">-> permissions.id</tspan></text>
+                <text x="14" y="116" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- PERMISSIONS TABLE -->
+            <g class="table-box" transform="translate(1200, 740)">
+                <rect width="220" height="130" rx="10" fill="#fff" stroke="#8b2f9e" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="220" height="34" rx="10" fill="#8b2f9e"/>
+                <rect x="0" y="24" width="220" height="10" fill="#8b2f9e"/>
+                <text x="110" y="23" text-anchor="middle" fill="#fff" class="table-header">permissions</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col">name <tspan class="col-type">VARCHAR UNIQUE</tspan></text>
+                <text x="14" y="96" class="table-col">description <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="116" class="table-col">created_at, updated_at <tspan class="col-type">TS</tspan></text>
+            </g>
+
+            <!-- PERSONAL_ACCESS_TOKENS TABLE -->
+            <g class="table-box" transform="translate(1200, 320)">
+                <rect width="240" height="170" rx="10" fill="#fff" stroke="#999" stroke-width="2" filter="url(#shadow)"/>
+                <rect width="240" height="34" rx="10" fill="#999"/>
+                <rect x="0" y="24" width="240" height="10" fill="#999"/>
+                <text x="120" y="23" text-anchor="middle" fill="#fff" class="table-header">personal_access_tokens</text>
+                <text x="14" y="56" class="table-col"><tspan class="pk">PK</tspan> id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="76" class="table-col">tokenable_type <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="96" class="table-col">tokenable_id <tspan class="col-type">BIGINT</tspan></text>
+                <text x="14" y="116" class="table-col">name <tspan class="col-type">VARCHAR</tspan></text>
+                <text x="14" y="136" class="table-col">token <tspan class="col-type">VARCHAR(64)</tspan></text>
+                <text x="14" y="156" class="table-col">abilities, last_used_at <tspan class="col-type">TEXT/TS</tspan></text>
+            </g>
+        </svg>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background:#78c2ad;"></div>
+            Korisnici
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background:#5b7fd6;"></div>
+            Kvizovi / Pitanja / Opcije
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background:#f3969a;"></div>
+            Pokušaji / Odgovori
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background:#e8a838;"></div>
+            Multiplayer
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background:#8b2f9e;"></div>
+            Uloge i dozvole (Role & Permission)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background:#999;"></div>
+            Autentifikacija (Sanctum)
+        </div>
+        <div class="legend-item">
+            <span style="color:#e8a838; font-weight:700;">PK</span> = Primarni ključ
+        </div>
+        <div class="legend-item">
+            <span style="color:#5b7fd6; font-weight:700;">FK</span> = Strani ključ
+        </div>
+        <div class="legend-item">
+            <span style="color:#999;">---></span> = Relacija (1:N)
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px; color:#888; font-size:12px;">
+        QuizApp ER Dijagram | 13 tablica | Laravel 12 + Vue.js 3 | Generirano: 29.06.2026.
+    </div>
+</body>
+</html>

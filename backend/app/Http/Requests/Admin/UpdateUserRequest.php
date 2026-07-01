@@ -12,7 +12,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->user_type === 'admin';
+        return $this->user() && in_array($this->user()->user_type, ['admin', 'super_admin']);
     }
 
     /**
@@ -29,7 +29,7 @@ class UpdateUserRequest extends FormRequest
             'username' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('users')->ignore($userId)],
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
             'password' => ['sometimes', 'nullable', 'string', 'min:8'],
-            'user_type' => ['sometimes', 'required', Rule::in(['admin', 'teacher', 'student'])],
+            'user_type' => ['sometimes', 'required', Rule::in(['super_admin', 'admin', 'teacher', 'student'])],
         ];
     }
 }

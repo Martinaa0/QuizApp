@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,17 +45,32 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): JsonResponse
     {
+        $userType = $request->user_type ?? 'student';
+
+        // Samo super_admin može kreirati admin ili super_admin korisnike
+        if (in_array($userType, ['admin', 'super_admin']) && $request->user()->user_type !== 'super_admin') {
+            return response()->json([
+                'message' => 'Samo super administrator može kreirati administratore.',
+            ], 403);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_type' => $request->user_type ?? 'student',
+            'user_type' => $userType,
         ]);
+
+        // Dodjela uloge
+        $role = Role::where('name', $userType)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user,
+            'user' => $user->load('roles'),
         ], 201);
     }
 
@@ -82,11 +98,56 @@ class UserController extends Controller
             $data['password'] = Hash::make($data['password']);
         }
 
+        // Samo super_admin može promijeniti ulogu u admin/super_admin
+        if (isset($data['user_type']) && in_array($data['user_type'], ['admin', 'super_admin']) && $request->user()->user_type !== 'super_admin') {
+            return response()->json([
+                'message' => 'Samo super administrator može dodijeliti admin uloge.',
+            ], 403);
+        }
+
+        $oldType = $user->user_type;
         $user->update($data);
+
+        // Ako se promijenio user_type, ažuriraj i ulogu
+        if (isset($data['user_type']) && $data['user_type'] !== $oldType) {
+            $newRole = Role::where('name', $data['user_type'])->first();
+            if ($newRole) {
+                $user->roles()->sync([$newRole->id]);
+            }
+        }
 
         return response()->json([
             'message' => 'User updated successfully',
-            'user' => $user,
+            'user' => $user->load('roles'),
+        ]);
+    }
+
+    /**
+     * Update user role.
+     */
+    public function updateRole(Request $request, string $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $role = Role::findOrFail($request->role_id);
+
+        // Samo super_admin može dodijeliti admin/super_admin ulogu
+        if (in_array($role->name, ['admin', 'super_admin']) && $request->user()->user_type !== 'super_admin') {
+            return response()->json([
+                'message' => 'Samo super administrator može dodijeliti admin uloge.',
+            ], 403);
+        }
+
+        $user->roles()->sync([$role->id]);
+        $user->update(['user_type' => $role->name]);
+
+        return response()->json([
+            'message' => 'User role updated successfully',
+            'user' => $user->load('roles'),
         ]);
     }
 

@@ -45,6 +45,7 @@
           <option value="student">Student</option>
           <option value="teacher">Profesor</option>
           <option value="admin">Admin</option>
+          <option v-if="isSuperAdmin" value="super_admin">Super Admin</option>
         </select>
       </div>
     </div>
@@ -106,6 +107,14 @@ const loading = ref(false)
 const error = ref(null)
 
 const editing = computed(() => !!props.user)
+
+const isSuperAdmin = computed(() => {
+  try {
+    const userStr = localStorage.getItem('user')
+    const currentUser = userStr ? JSON.parse(userStr) : null
+    return currentUser?.user_type === 'super_admin'
+  } catch { return false }
+})
 
 watch(
   () => props.user,

@@ -55,7 +55,7 @@ const handleLogout = async () => {
           <router-link to="/quizzes" class="nav-pill" :class="{ active: route.name === 'QuizList' }">Pregled</router-link>
           <router-link v-if="isAuthenticated" to="/quizzes/create" class="nav-pill" :class="{ active: route.name === 'QuizCreate' }">Kreiraj</router-link>
           <router-link v-if="isAuthenticated" to="/lobby" class="nav-pill" :class="{ active: route.name === 'Lobby' || route.name === 'MultiplayerGame' }">Multiplayer</router-link>
-          <router-link v-if="user?.user_type === 'admin'" to="/admin/users" class="nav-pill" :class="{ active: route.name === 'UserManagement' }">Admin</router-link>
+          <router-link v-if="user?.user_type === 'admin' || user?.user_type === 'super_admin'" to="/admin/users" class="nav-pill" :class="{ active: route.name === 'UserManagement' }">Admin</router-link>
         </nav>
 
         <div class="app-bar-spacer"></div>

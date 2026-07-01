@@ -102,7 +102,7 @@ router.beforeEach(async (to, from, next) => {
       const userStr = localStorage.getItem('user')
       const user = userStr ? JSON.parse(userStr) : null
       
-      if (!user || user.user_type !== 'admin') {
+      if (!user || !['admin', 'super_admin'].includes(user.user_type)) {
         // Fetch current user to check role
         const response = await fetch('http://localhost:8000/api/user', {
           headers: {
@@ -110,10 +110,10 @@ router.beforeEach(async (to, from, next) => {
             'Accept': 'application/json',
           },
         })
-        
+
         if (response.ok) {
           const currentUser = await response.json()
-          if (currentUser.user_type !== 'admin') {
+          if (!['admin', 'super_admin'].includes(currentUser.user?.user_type || currentUser.user_type)) {
             alert('You do not have permission to access this page.')
             next({ name: 'QuizList' })
             return

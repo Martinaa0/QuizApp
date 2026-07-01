@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,19 +18,32 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
+        $userType = $request->user_type ?? 'student';
+
+        // Sprječavanje registracije admin/super_admin putem javne registracije
+        if (in_array($userType, ['admin', 'super_admin'])) {
+            $userType = 'student';
+        }
+
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_type' => $request->user_type ?? 'student',
+            'user_type' => $userType,
         ]);
+
+        // Dodjela uloge korisniku
+        $role = Role::where('name', $userType)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
+            'user' => $user->load('roles.permissions'),
             'token' => $token,
         ], 201);
     }
@@ -60,8 +74,8 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Block admins from using regular login
-        if ($user->user_type === 'admin') {
+        // Block admins/super_admins from using regular login
+        if (in_array($user->user_type, ['admin', 'super_admin'])) {
             return response()->json([
                 'message' => 'Admin accounts must use the admin login portal.',
                 'errors' => [
@@ -74,7 +88,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user,
+            'user' => $user->load('roles.permissions'),
             'token' => $token,
         ]);
     }
@@ -104,8 +118,8 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Only allow admins
-        if ($user->user_type !== 'admin') {
+        // Only allow admins and super_admins
+        if (!in_array($user->user_type, ['admin', 'super_admin'])) {
             return response()->json([
                 'message' => 'Access denied. This portal is for administrators only.',
                 'errors' => [
@@ -118,7 +132,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Admin login successful',
-            'user' => $user,
+            'user' => $user->load('roles.permissions'),
             'token' => $token,
         ]);
     }
@@ -141,7 +155,7 @@ class AuthController extends Controller
     public function user(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user(),
+            'user' => $request->user()->load('roles.permissions'),
         ]);
     }
 }

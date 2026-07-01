@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AttemptController;
@@ -82,5 +83,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::apiResource('users', AdminUserController::class);
         Route::get('users/{id}/stats', [AdminUserController::class, 'show']);
+
+        // Role & Permission routes
+        Route::get('roles', [RoleController::class, 'index']);
+        Route::get('roles/{id}', [RoleController::class, 'show']);
+        Route::put('users/{id}/role', [AdminUserController::class, 'updateRole']);
+    });
+
+    // Super Admin only routes
+    Route::middleware('super_admin')->prefix('admin')->group(function () {
+        Route::post('roles', [RoleController::class, 'store']);
+        Route::put('roles/{id}', [RoleController::class, 'update']);
+        Route::delete('roles/{id}', [RoleController::class, 'destroy']);
     });
 });

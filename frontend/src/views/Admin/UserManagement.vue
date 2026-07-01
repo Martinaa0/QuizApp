@@ -58,6 +58,7 @@
             </button>
             <div v-if="roleMenuOpen" class="dropdown-menu-custom" style="right:0; left:auto; min-width:160px;">
               <div class="dropdown-item" :class="{ active: !userTypeFilter }" @click="selectRole('')">Sve uloge</div>
+              <div class="dropdown-item" :class="{ active: userTypeFilter === 'super_admin' }" @click="selectRole('super_admin')">Super Admin</div>
               <div class="dropdown-item" :class="{ active: userTypeFilter === 'admin' }" @click="selectRole('admin')">Admin</div>
               <div class="dropdown-item" :class="{ active: userTypeFilter === 'teacher' }" @click="selectRole('teacher')">Profesor</div>
               <div class="dropdown-item" :class="{ active: userTypeFilter === 'student' }" @click="selectRole('student')">Student</div>
@@ -156,6 +157,7 @@ const avatarColors = ['#78c2ad', '#f3969a', '#5b7fd6', '#f5b740', '#56cc9d', '#f
 const avatarColor = (name) => avatarColors[(name || '').length % avatarColors.length]
 const initials = (name) => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 const rolePillClass = (t) => {
+  if (t === 'super_admin') return 'pill-super-admin'
   if (t === 'admin') return 'pill-admin'
   if (t === 'teacher') return 'pill-teacher'
   return 'pill-student'

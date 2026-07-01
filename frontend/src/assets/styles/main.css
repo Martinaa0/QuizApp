@@ -260,6 +260,7 @@ a:hover {
 .pill-student { background: var(--mint-soft); color: #2f6b5c; }
 .pill-teacher { background: #fdeef0; color: #c5566a; }
 .pill-admin { background: #eef2fd; color: var(--info); }
+.pill-super-admin { background: #fde8ff; color: #8b2f9e; }
 
 .pill-sm { font-size: 11.5px; padding: 4px 10px; }
 .pill-md { font-size: 12.5px; padding: 6px 13px; }
