@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Kreiraj axios instancu s osnovnom konfiguracijom
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'http://pzi072026.studenti.sum.ba/backend/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -27,7 +27,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || ''
+    const isLoginRequest = requestUrl.includes('/login') || requestUrl.includes('/register')
+    if (error.response?.status === 401 && !isLoginRequest) {
       // Token je istekao ili nije valjan
       localStorage.removeItem('auth_token')
       localStorage.removeItem('user')

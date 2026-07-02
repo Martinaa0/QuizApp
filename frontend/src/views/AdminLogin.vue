@@ -45,7 +45,7 @@ const handleLogin = async () => {
   try {
     const r = await api.post('/admin/login', { email: form.value.email.trim(), password: form.value.password })
     const { token, user } = r.data
-    if (user.user_type !== 'admin') { error.value = 'Pristup odbijen. Samo za administratore.'; loading.value = false; return }
+    if (!['admin', 'super_admin'].includes(user.user_type)) { error.value = 'Pristup odbijen. Samo za administratore.'; loading.value = false; return }
     localStorage.setItem('auth_token', token)
     localStorage.setItem('user', JSON.stringify(user))
     window.dispatchEvent(new Event('user-updated'))
