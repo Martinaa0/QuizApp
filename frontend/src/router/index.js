@@ -104,7 +104,7 @@ router.beforeEach(async (to, from, next) => {
       
       if (!user || !['admin', 'super_admin'].includes(user.user_type)) {
         // Fetch current user to check role
-        const response = await fetch('http://localhost:8000/api/user', {
+        const response = await fetch('http://pzi072026.studenti.sum.ba/backend/api/user', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
