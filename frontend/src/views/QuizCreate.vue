@@ -39,11 +39,13 @@
               required
             />
             <div style="margin-top:16px;">
-              <RichTextEditor
+              <textarea
+                class="qa-input"
                 v-model="form.description"
-                :height="180"
+                rows="5"
                 placeholder="Dodajte opis…"
-              />
+                style="resize:vertical; min-height:100px;"
+              ></textarea>
             </div>
           </div>
 
@@ -150,7 +152,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import QuestionForm from '../components/QuestionForm.vue'
-import RichTextEditor from '../components/RichTextEditor.vue'
 
 const router = useRouter()
 const form = ref({ title: '', description: '', category: '', difficulty: 'medium', duration: null, is_active: true })

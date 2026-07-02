@@ -15,11 +15,14 @@
         <form @submit.prevent="handleSubmit">
           <div class="mb-3">
             <label for="question-text" class="form-label">Tekst pitanja *</label>
-            <RichTextEditor
+            <textarea
+              id="question-text"
+              class="form-control"
               v-model="form.text"
-              :height="200"
+              rows="3"
               placeholder="Unesite svoje pitanje..."
-            />
+              required
+            ></textarea>
           </div>
 
           <div class="row mb-3">
@@ -149,7 +152,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import api from '../services/api'
-import RichTextEditor from './RichTextEditor.vue'
 
 const props = defineProps({
   quizId: {
