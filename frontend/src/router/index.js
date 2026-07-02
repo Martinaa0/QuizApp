@@ -61,6 +61,11 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true },
   },
   {
+    path: '/nemate-pristup',
+    name: 'AccessDenied',
+    component: () => import('../views/AccessDenied.vue'),
+  },
+  {
     path: '/lobby',
     name: 'Lobby',
     component: () => import('../views/Lobby.vue'),
@@ -114,8 +119,7 @@ router.beforeEach(async (to, from, next) => {
         if (response.ok) {
           const currentUser = await response.json()
           if (!['admin', 'super_admin'].includes(currentUser.user?.user_type || currentUser.user_type)) {
-            alert('You do not have permission to access this page.')
-            next({ name: 'QuizList' })
+            next({ name: 'AccessDenied' })
             return
           }
         } else {

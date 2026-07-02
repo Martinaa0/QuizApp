@@ -190,7 +190,7 @@ const fetchUsers = async () => {
       pagination.value = null
     }
   } catch (e) {
-    if (e.response?.status === 403) { alert('Pristup odbijen.'); router.push('/quizzes') }
+    if (e.response?.status === 403) { router.push('/nemate-pristup') }
     users.value = []
   } finally { loading.value = false }
 }

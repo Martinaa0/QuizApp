@@ -253,7 +253,7 @@ a:hover {
   white-space: nowrap;
 }
 
-.pill-easy { background: #e7f5ee; color: var(--success-deep); border: 1px solid #cfeede; }
+.pill-easy { background: #ffe9e2; color: var(--danger-text); border: 1px solid #ffd6c7; }
 .pill-medium { background: #fbf2dd; color: var(--warning-deep); border: 1px solid #f1e2b8; }
 .pill-hard { background: #ffe9e2; color: var(--danger-text); border: 1px solid #ffd6c7; }
 
